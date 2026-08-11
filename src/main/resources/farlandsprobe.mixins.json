@@ -1,0 +1,30 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.farlandsprobe.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BlockAndLightGetterMixin",
+    "LevelLightEngineMixin",
+    "LevelMixin",
+    "ChunkPosMixin",
+    "WorldBorderMixin",
+    "PlayerMixin",
+    "ServerGamePacketListenerImplMixin",
+    "EntitySectionStorageMixin",
+    "EntityMixin",
+    "SectionPosMixin",
+    "LayerLightSectionStorageMixin",
+    "MineshaftPiecesMixin",
+    "AquiferMixin",
+    "ChunkGeneratorMixin"
+  ],
+  "client": [
+    "client.LightmapRenderStateExtractorMixin",
+    "client.DarknessFogEnvironmentMixin",
+    "client.OctreeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

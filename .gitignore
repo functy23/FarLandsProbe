@@ -1,0 +1,24 @@
+# Gradle / build output
+.gradle/
+build/
+out/
+
+# Minecraft dev run directory (worlds, logs, crash reports, screenshots)
+run/
+logs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+*.tmp
