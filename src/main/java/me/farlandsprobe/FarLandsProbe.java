@@ -16,7 +16,7 @@ public class FarLandsProbe implements ModInitializer {
         FarLandsProbeConfig.register();
         FarLandsProbeConfig.save();
         if (FarLandsProbeConfig.isC2meCompatMode()) {
-            LOGGER.warn("[FarLandsProbe] C²M Engine detected: 22/22/20 section encoding auto-disabled "
+            LOGGER.warn("[FarLandsProbe] C²M Engine detected: 28/8/28 section encoding auto-disabled "
                 + "(c2me is incompatible with the extended packing); other features remain active.");
         }
         LOGGER.info("[FarLandsProbe] loaded: fullbright={} border={} clamps={} bounds={} sectionEncoding={}",
