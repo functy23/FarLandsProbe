@@ -80,6 +80,14 @@ public class FarLandsProbeConfig implements ConfigData {
 	public static class Stability {
 		@ConfigEntry.Gui.Tooltip
 		@ConfigEntry.Gui.RequiresRestart
+		public boolean wrapCoordinates = true;
+
+		@ConfigEntry.Gui.Tooltip
+		@ConfigEntry.Gui.RequiresRestart
+		public boolean fixChunkBoundaryGeneration = true;
+
+		@ConfigEntry.Gui.Tooltip
+		@ConfigEntry.Gui.RequiresRestart
 		public boolean guardHugeMoveDelta = true;
 
 		@ConfigEntry.Gui.Tooltip
@@ -105,6 +113,24 @@ public class FarLandsProbeConfig implements ConfigData {
 		@ConfigEntry.Gui.Tooltip
 		@ConfigEntry.Gui.RequiresRestart
 		public boolean disableStructuresFarOut = true;
+	}
+
+	private static Boolean c2mePresent;
+
+	private static boolean isC2mePresent() {
+		if (c2mePresent == null) {
+			c2mePresent = net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("c2me");
+		}
+		return c2mePresent;
+	}
+
+	/**
+	 * C²M 引擎重写了区块存储/异步加载系统，基于 vanilla 22/20/22 的 section 打包，
+	 * 与 28/8/28 坐标扩展不兼容（遇到 int 边界回绕区块会 "Max retries reached" 崩溃）。
+	 * 检测到 c2me 时自动回落到 vanilla 编码。
+	 */
+	public static boolean isC2meCompatMode() {
+		return isC2mePresent();
 	}
 
 	public static void register() {
@@ -146,10 +172,21 @@ public class FarLandsProbeConfig implements ConfigData {
 
 	// 坐标编码 / Coordinate encoding
 	public static boolean isExtendSectionEncoding() {
+		if (isC2mePresent()) {
+			return false; // c2me 不兼容 28/8/28 打包，自动回落到 vanilla
+		}
 		return get().encoding.extendSectionEncoding;
 	}
 
 	// 远地稳定性修复 / Far-lands stability patches
+	public static boolean isWrapCoordinates() {
+		return get().stability.wrapCoordinates;
+	}
+
+	public static boolean isFixChunkBoundaryGeneration() {
+		return get().stability.fixChunkBoundaryGeneration;
+	}
+
 	public static boolean isGuardHugeMoveDelta() {
 		return get().stability.guardHugeMoveDelta;
 	}
