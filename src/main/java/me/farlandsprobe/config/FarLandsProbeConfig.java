@@ -80,14 +80,6 @@ public class FarLandsProbeConfig implements ConfigData {
 	public static class Stability {
 		@ConfigEntry.Gui.Tooltip
 		@ConfigEntry.Gui.RequiresRestart
-		public boolean wrapCoordinates = true;
-
-		@ConfigEntry.Gui.Tooltip
-		@ConfigEntry.Gui.RequiresRestart
-		public boolean fixChunkBoundaryGeneration = true;
-
-		@ConfigEntry.Gui.Tooltip
-		@ConfigEntry.Gui.RequiresRestart
 		public boolean guardHugeMoveDelta = true;
 
 		@ConfigEntry.Gui.Tooltip
@@ -179,14 +171,6 @@ public class FarLandsProbeConfig implements ConfigData {
 	}
 
 	// 远地稳定性修复 / Far-lands stability patches
-	public static boolean isWrapCoordinates() {
-		return get().stability.wrapCoordinates;
-	}
-
-	public static boolean isFixChunkBoundaryGeneration() {
-		return get().stability.fixChunkBoundaryGeneration;
-	}
-
 	public static boolean isGuardHugeMoveDelta() {
 		return get().stability.guardHugeMoveDelta;
 	}

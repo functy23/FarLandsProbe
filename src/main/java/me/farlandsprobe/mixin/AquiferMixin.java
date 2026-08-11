@@ -13,14 +13,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Near the +-2^31 block limit, ChunkPos.getMinBlockX()/getMaxBlockX() already
- * overflow int, and vanilla's grid-size arithmetic (all int) then overflows the
- * product `gridSizeX * gridSizeY * gridSizeZ` into a huge positive number, so
- * `new long[totalGridSize]` exhausts the heap (OutOfMemoryError during worldgen).
- *
- * Guard with long math: if any block coordinate is within 2,000,000,000 of the
- * int edge (i.e. vanilla's +/-5 offsets would overflow), or the (absurd) grid is
- * too large, disable the aquifer instead of allocating.
+ * Near the +-2^31 block limit, garbage coordinates (e.g. from mineshaft piece
+ * int overflow) can make the aquifer grid-size product absurdly large, so
+ * `new long[totalGridSize]` exhausts the heap (OutOfMemoryError during
+ * worldgen). Guard with long math: if the (absurd) grid is too large, disable
+ * the aquifer instead of allocating.
  * Disabled when {@link FarLandsProbeConfig#isFixAquiferOverflow()} is off.
  */
 @Mixin(Aquifer.class)
@@ -44,7 +41,6 @@ public interface AquiferMixin {
 			return;
 		}
 
-		final long INT_EDGE_SAFE_LIMIT = 2_000_000_000L;
 		final long MAX_AQUIFER_GRID = 4_000_000L;
 		final long MAX_GRID_SIDE = 4096L;
 
@@ -52,17 +48,6 @@ public interface AquiferMixin {
 		long maxBlockX = pos.getMaxBlockX();
 		long minBlockZ = pos.getMinBlockZ();
 		long maxBlockZ = pos.getMaxBlockZ();
-
-		// 块坐标已接近/越过 int 边界：vanilla 的 +/-5 与 int 连乘必然溢出 → 直接禁用。
-		if (minBlockX < -INT_EDGE_SAFE_LIMIT || maxBlockX > INT_EDGE_SAFE_LIMIT
-			|| minBlockZ < -INT_EDGE_SAFE_LIMIT || maxBlockZ > INT_EDGE_SAFE_LIMIT) {
-			LoggerFactory.getLogger("farlandsprobe").warn(
-				"[farlandsprobe] aquifer near int edge at pos={} minX={} maxX={} minZ={} maxZ={}; disabling aquifer",
-				pos, minBlockX, maxBlockX, minBlockZ, maxBlockZ
-			);
-			cir.setReturnValue(Aquifer.createDisabled(fluidRule));
-			return;
-		}
 
 		long gridSizeX = ((maxBlockX - 5) >> 4) + 1 - ((minBlockX - 5) >> 4) + 1;
 		long gridSizeY = Math.floorDiv((long) minBlockY + yBlockSize + 1, 12) + 1 - (Math.floorDiv((long) minBlockY + 1, 12) - 1) + 1;
