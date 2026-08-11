@@ -18,11 +18,11 @@ All features are enabled by default, but **every feature can be toggled independ
 
 ## The 32-bit limit
 
-> `BlockPos` stores coordinates in a signed 32-bit `int`, so **±2,147,483,647 is the physical ceiling**. The extended section encoding pushes the render/generation limit right up to that edge — but past it, coordinates wrap in `int` and terrain cannot generate. That is the int32 limit; going further would require arbitrary-precision coordinates (a whole game fork, e.g. MCBig-style), which is not possible in a mod.
+> `BlockPos` stores coordinates in a signed 32-bit `int`, so ±2,147,483,647 is the hard ceiling. The extended section packing (X22/Y22/Z20) pushes the *generated* range to **X and Y: ±33,554,432 blocks** (Y is enough for the sky far lands around 25,101,647) and **Z: ±8,388,608 blocks**. Past those, section coordinates wrap; going truly beyond would require arbitrary-precision coordinates (a whole game fork, e.g. MCBig-style), which is not possible in a mod.
 
 ## C²M (C2ME) compatibility
 
-> ⚠️ **C²M Engine rewrites the chunk storage/async loading system and is incompatible with the extended 28/8/28 section packing.** When C2ME is detected, the mod **automatically falls back to vanilla section encoding** (log: `C²M Engine detected: 28/8/28 section encoding auto-disabled`). In a C2ME profile you can still remove the border / movement clamps / teleport bounds, but far-lands deep exploration (beyond ±33,554,432 blocks) will not generate. Use a **non-C2ME environment** for that.
+> ⚠️ **C²M Engine rewrites the chunk storage/async loading system and is incompatible with the extended 22/22/20 section packing.** When C2ME is detected, the mod **automatically falls back to vanilla section encoding** (log: `C²M Engine detected: 22/22/20 section encoding auto-disabled`). In a C2ME profile you can still remove the border / movement clamps / teleport bounds, but far-lands deep exploration (beyond ±33,554,432 blocks) will not generate. Use a **non-C2ME environment** for that.
 
 ## Rendering caveats
 
@@ -37,7 +37,7 @@ All features are enabled by default, but **every feature can be toggled independ
 | World border → Disable 30,000,000 movement clamps | On | Remove the invisible walls |
 | Spawn & teleport bounds → Relax spawn/teleport checks | On | /tp, /summon, height queries work beyond ±30M |
 | Spawn & teleport bounds → Allow chunk generation everywhere | On | Remove chunk validity checks |
-| Coordinate encoding → Extend section encoding (28/8/28) | On* | Push render/generation limit to the int32 edge (*auto-off under C2ME) |
+| Coordinate encoding → Extend section encoding (X22/Y22/Z20) | On* | X/Y to ±33.5M blocks, Z to ±8.4M (*auto-off under C2ME) |
 | Far-lands stability → Guard huge move deltas | On | Prevent server-thread freeze |
 | Far-lands stability → Entity/lighting/mineshaft/aquifer/octree overflow fixes | On | Crash guards |
 | Far-lands stability → Disable structures far out | On | Avoid structure-overflow OOM |
@@ -48,7 +48,7 @@ All features are enabled by default, but **every feature can be toggled independ
 2. **Remove the built-in world border** — `WorldBorder` (wall/damage/vignette/clamping) + the three invisible walls: `Player#tick`, `ServerGamePacketListenerImpl#clampHorizontal`, `Entity#absSnapTo`. Huge move deltas are snapped instead of collided.
 3. **Relax spawn & teleport checks** — `Level` bounds + `Level#getHeight`; `ChunkPos#isValid` allows generation anywhere.
 4. **Extended coordinate encoding & stability patches**
-   - `SectionPos` repacked **X/Z 28 bits + Y 8 bits** → render/generation limit moves to ±2,147,483,632 blocks (auto-fallback under C2ME)
+   - `SectionPos` repacked **X 22 / Y 22 / Z 20 bits** → X and Y both reach ±33,554,432 blocks (Y reaches the sky far lands ~25,101,647), Z reaches ±8,388,608 (auto-fallback under C2ME)
    - `Aquifer`: long-math guard against absurd grid sizes (prevents OOM from huge allocations)
    - `LayerLightSectionStorage` / `EntitySectionStorage` / `MineshaftPieces` / `Octree` overflow guards
    - Structures skipped far out (avoid coordinate-overflow OOM)
