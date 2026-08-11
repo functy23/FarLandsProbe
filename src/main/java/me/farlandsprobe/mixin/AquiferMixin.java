@@ -1,5 +1,6 @@
 package me.farlandsprobe.mixin;
 
+import me.farlandsprobe.config.FarLandsProbeConfig;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.NoiseChunk;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * becomes astronomically large and `new long[totalGridSize]` exhausts the heap
  * (OutOfMemoryError during worldgen). Guard: if the grid is absurd, disable the
  * aquifer instead of allocating.
+ * Disabled when {@link FarLandsProbeConfig#isFixAquiferOverflow()} is off.
  */
 @Mixin(Aquifer.class)
 public interface AquiferMixin {
@@ -35,6 +37,9 @@ public interface AquiferMixin {
 		Aquifer.FluidPicker fluidRule,
 		CallbackInfoReturnable<Aquifer> cir
 	) {
+		if (!FarLandsProbeConfig.isFixAquiferOverflow()) {
+			return;
+		}
 		int gridSizeX = ((pos.getMaxBlockX() - 5) >> 4) + 1 - ((pos.getMinBlockX() - 5) >> 4) + 1;
 		int gridSizeY = Math.floorDiv(minBlockY + yBlockSize + 1, 12) + 1 - (Math.floorDiv(minBlockY + 1, 12) - 1) + 1;
 		int gridSizeZ = ((pos.getMaxBlockZ() - 5) >> 4) + 1 - ((pos.getMinBlockZ() - 5) >> 4) + 1;

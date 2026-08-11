@@ -1,7 +1,9 @@
 package me.farlandsprobe.mixin;
 
+import me.farlandsprobe.config.FarLandsProbeConfig;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -18,13 +20,15 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * 1) The server clamps every player/vehicle move-packet target to +-30,000,000
  *    (clampHorizontal) and absSnapTo()s the clamped position, so walking past
  *    30M (or dropping out of flight) instantly snaps the player back. This
- *    redirect neutralizes that clamp.
+ *    redirect neutralizes that clamp (falling back to vanilla when
+ *    {@link FarLandsProbeConfig#isDisableMovementClamps()} is off).
  *
  * 2) Once the coordinate encoding wraps, a move packet can arrive with a delta
  *    of tens of millions of blocks; Entity.move() then runs BlockCollisions
  *    over a gigantic AABB and the server thread hangs ("half-freeze": terrain
  *    stops loading, commands stop working, UI keeps rendering). We log the
- *    offending delta and snap directly to the target instead of colliding.
+ *    offending delta and snap directly to the target instead of colliding
+ *    (only when {@link FarLandsProbeConfig#isGuardHugeMoveDelta()} is on).
  */
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerGamePacketListenerImplMixin {
@@ -35,7 +39,7 @@ public abstract class ServerGamePacketListenerImplMixin {
 
 	@Redirect(method = "clampHorizontal", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(DDD)D"))
 	private static double farlandsprobe$noClampHorizontal(double value, double min, double max) {
-		return value;
+		return FarLandsProbeConfig.isDisableMovementClamps() ? value : Mth.clamp(value, min, max);
 	}
 
 	@Redirect(
@@ -43,6 +47,11 @@ public abstract class ServerGamePacketListenerImplMixin {
 		at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V")
 	)
 	private void farlandsprobe$guardHugeMoveDelta(ServerPlayer instance, MoverType moverType, Vec3 delta) {
+		if (!FarLandsProbeConfig.isGuardHugeMoveDelta()) {
+			instance.move(moverType, delta);
+			return;
+		}
+
 		double lenSq = delta.lengthSqr();
 		if (lenSq > 4096.0 * 4096.0) {
 			LOGGER.warn(

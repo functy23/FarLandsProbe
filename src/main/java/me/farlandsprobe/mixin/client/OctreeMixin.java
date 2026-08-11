@@ -1,6 +1,7 @@
 package me.farlandsprobe.mixin.client;
 
 import java.lang.reflect.Field;
+import me.farlandsprobe.config.FarLandsProbeConfig;
 import org.slf4j.LoggerFactory;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -22,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * 512-block power-of-two span (so the octree subdivision invariant holds).
  * The final `root` field is replaced via a cached reflective Field because the
  * JVM forbids writing a final field from an injected method.
+ * Disabled when {@link FarLandsProbeConfig#isFixOctreeOverflow()} is off.
  */
 @Environment(EnvType.CLIENT)
 @Mixin(Octree.class)
@@ -39,6 +41,9 @@ public abstract class OctreeMixin {
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void farlandsprobe$clampOctreeBounds(SectionPos cameraSection, int renderDistance, int sectionsPerChunk, int minBlockY, CallbackInfo ci) {
+		if (!FarLandsProbeConfig.isFixOctreeOverflow()) {
+			return;
+		}
 		int visibleAreaDiameterInSections = renderDistance * 2 + 1;
 		int boundingBoxSizeInSections = Mth.smallestEncompassingPowerOfTwo(visibleAreaDiameterInSections);
 		int distanceToBBEdgeInBlocks = renderDistance * 16;

@@ -2,6 +2,7 @@ package me.farlandsprobe.mixin;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSets;
+import me.farlandsprobe.config.FarLandsProbeConfig;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntitySectionStorage;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * section coordinate (~33,554,416 blocks) the +1 overflows to Long.MIN_VALUE,
  * making start > end and crashing the game (crosshair raycast etc.).
  * Guard the range so it degrades to an empty set instead of crashing.
+ * Disabled when {@link FarLandsProbeConfig#isFixEntitySectionOverflow()} is off.
  */
 @Mixin(EntitySectionStorage.class)
 public abstract class EntitySectionStorageMixin<T extends EntityAccess> {
@@ -22,6 +24,9 @@ public abstract class EntitySectionStorageMixin<T extends EntityAccess> {
 		at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/longs/LongSortedSet;subSet(JJ)Lit/unimi/dsi/fastutil/longs/LongSortedSet;")
 	)
 	private LongSortedSet farlandsprobe$safeSectionSubSet(LongSortedSet instance, long from, long to) {
+		if (!FarLandsProbeConfig.isFixEntitySectionOverflow()) {
+			return instance.subSet(from, to);
+		}
 		return from <= to ? instance.subSet(from, to) : LongSortedSets.EMPTY_SET;
 	}
 }

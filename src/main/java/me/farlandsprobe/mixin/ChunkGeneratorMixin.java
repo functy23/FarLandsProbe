@@ -1,5 +1,6 @@
 package me.farlandsprobe.mixin;
 
+import me.farlandsprobe.config.FarLandsProbeConfig;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
@@ -21,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * OutOfMemoryError during worldgen (huge aquifer grid allocation). Structure
  * generation beyond a safe margin (63,000,000 chunks = ~1,008,000,000 blocks)
  * is skipped entirely; normal terrain generation is unaffected.
+ * Disabled when {@link FarLandsProbeConfig#isDisableStructuresFarOut()} is off.
  */
 @Mixin(ChunkGenerator.class)
 public abstract class ChunkGeneratorMixin {
@@ -36,6 +38,9 @@ public abstract class ChunkGeneratorMixin {
 		ResourceKey<Level> level,
 		CallbackInfo ci
 	) {
+		if (!FarLandsProbeConfig.isDisableStructuresFarOut()) {
+			return;
+		}
 		ChunkPos pos = centerChunk.getPos();
 		long cx = pos.x();
 		long cz = pos.z();

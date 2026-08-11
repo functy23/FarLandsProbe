@@ -7,6 +7,7 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+	maven { url = "https://api.modrinth.com/maven" }
 }
 
 loom {
@@ -24,6 +25,10 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	// Cloth Config is required (config screens + config file).
+	implementation "maven.modrinth:cloth-config:26.2.155+fabric"
+	// Mod Menu is optional at runtime; only used for the config screen entry point.
+	implementation "maven.modrinth:modmenu:20.0.1"
 }
 
 processResources {

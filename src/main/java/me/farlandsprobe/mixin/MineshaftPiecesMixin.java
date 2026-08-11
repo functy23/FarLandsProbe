@@ -1,12 +1,15 @@
 package me.farlandsprobe.mixin;
 
+import me.farlandsprobe.config.FarLandsProbeConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * MineshaftPieces$MineShaftPiece#isInInvalidLocation computes the corridor
@@ -14,15 +17,15 @@ import org.spongepowered.asm.mixin.Overwrite;
  * int, the midpoint jumps to about -2^30, and the biome query asks for a chunk
  * 2^31 blocks away -> "Requested chunk unavailable during world generation".
  * Rewritten with the overflow-safe form x0 + (x1 - x0) / 2.
+ * Disabled when {@link FarLandsProbeConfig#isFixMineshaftOverflow()} is off.
  */
 @Mixin(targets = "net.minecraft.world.level.levelgen.structure.structures.MineshaftPieces$MineShaftPiece")
 public abstract class MineshaftPiecesMixin {
-	/**
-	 * @author farlandsprobe
-	 * @reason Avoid int overflow in the corridor midpoint at extreme coordinates.
-	 */
-	@Overwrite
-	protected boolean isInInvalidLocation(LevelAccessor level, BoundingBox chunkBB) {
+	@Inject(method = "isInInvalidLocation(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;)Z", at = @At("HEAD"), cancellable = true)
+	private void farlandsprobe$overflowSafeMidpoint(LevelAccessor level, BoundingBox chunkBB, CallbackInfoReturnable<Boolean> cir) {
+		if (!FarLandsProbeConfig.isFixMineshaftOverflow()) {
+			return;
+		}
 		int x0 = Math.max(((StructurePiece) (Object) this).getBoundingBox().minX() - 1, chunkBB.minX());
 		int y0 = Math.max(((StructurePiece) (Object) this).getBoundingBox().minY() - 1, chunkBB.minY());
 		int z0 = Math.max(((StructurePiece) (Object) this).getBoundingBox().minZ() - 1, chunkBB.minZ());
@@ -31,17 +34,20 @@ public abstract class MineshaftPiecesMixin {
 		int z1 = Math.min(((StructurePiece) (Object) this).getBoundingBox().maxZ() + 1, chunkBB.maxZ());
 		BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos(x0 + (x1 - x0) / 2, y0 + (y1 - y0) / 2, z0 + (z1 - z0) / 2);
 		if (level.getBiome(blockPos).is(BiomeTags.MINESHAFT_BLOCKING)) {
-			return true;
+			cir.setReturnValue(true);
+			return;
 		}
 
 		for (int x = x0; x <= x1; x++) {
 			for (int z = z0; z <= z1; z++) {
 				if (level.getBlockState(blockPos.set(x, y0, z)).liquid()) {
-					return true;
+					cir.setReturnValue(true);
+					return;
 				}
 
 				if (level.getBlockState(blockPos.set(x, y1, z)).liquid()) {
-					return true;
+					cir.setReturnValue(true);
+					return;
 				}
 			}
 		}
@@ -49,11 +55,13 @@ public abstract class MineshaftPiecesMixin {
 		for (int x = x0; x <= x1; x++) {
 			for (int y = y0; y <= y1; y++) {
 				if (level.getBlockState(blockPos.set(x, y, z0)).liquid()) {
-					return true;
+					cir.setReturnValue(true);
+					return;
 				}
 
 				if (level.getBlockState(blockPos.set(x, y, z1)).liquid()) {
-					return true;
+					cir.setReturnValue(true);
+					return;
 				}
 			}
 		}
@@ -61,15 +69,17 @@ public abstract class MineshaftPiecesMixin {
 		for (int z = z0; z <= z1; z++) {
 			for (int y = y0; y <= y1; y++) {
 				if (level.getBlockState(blockPos.set(x0, y, z)).liquid()) {
-					return true;
+					cir.setReturnValue(true);
+					return;
 				}
 
 				if (level.getBlockState(blockPos.set(x1, y, z)).liquid()) {
-					return true;
+					cir.setReturnValue(true);
+					return;
 				}
 			}
 		}
 
-		return false;
+		cir.setReturnValue(false);
 	}
 }

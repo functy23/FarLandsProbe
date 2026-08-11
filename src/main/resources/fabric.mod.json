@@ -3,17 +3,22 @@
   "id": "farlandsprobe",
   "version": "${version}",
   "name": "FarLands Probe",
-  "description": "Fullbright everywhere + world border removed + spawn/teleport bounds relaxed, to explore far-lands precision corruption.",
+  "description": "Explore far-lands precision corruption: fullbright everywhere, world border removed, spawn/teleport bounds relaxed, extended section encoding and far-lands stability patches. All features are optional toggles in config/farlandsprobe.json, editable through the Cloth Config screen (Mod Menu -> FarLandsProbe). NOTE: changing most options requires a game restart.",
   "authors": ["farlandsprobe"],
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
-    "main": ["me.farlandsprobe.FarLandsProbe"]
+    "main": ["me.farlandsprobe.FarLandsProbe"],
+    "modmenu": ["me.farlandsprobe.config.ModMenuIntegration"]
   },
   "mixins": ["farlandsprobe.mixins.json"],
   "depends": {
     "fabricloader": ">=0.19.3",
     "minecraft": "~26.2",
-    "java": ">=25"
+    "java": ">=25",
+    "cloth-config": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
   }
 }

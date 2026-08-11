@@ -2,7 +2,34 @@
 
 Minecraft **26.2** Fabric mod（无混淆 / Mojang 官方映射）。
 
-三个功能，全部是为了**探索世界边界之外、精度开始崩坏的地形**：
+所有功能默认开启，但**每个功能都可以独立开关**，全部是为了探索世界边界之外、
+精度开始崩坏的地形。
+
+## 配置
+
+- **配置文件**：`config/farlandsprobe.json`（游戏启动时自动生成）
+- **配置界面**：由 **Cloth Config** 提供（**必装依赖**），分「光照 / 世界边境 /
+  生成与传送边界 / 坐标编码 / 远地稳定性修复」五类开关
+- **Mod Menu（可选）**：装了 Mod Menu 后，可从 模组列表 → FarLandsProbe →
+  配置 打开配置界面
+- ⚠️ **修改配置后需要重启游戏才能生效**：所有补丁都作用于世界生成、网络与渲染初始化
+  阶段，配置界面中带「重启」标记的选项改动后请重启游戏
+
+### 功能开关总览
+
+| 配置项 | 默认 | 说明 |
+|---|---|---|
+| 光照 → 无黑暗（全局最高亮度） | 开 | 全图无黑暗 |
+| 世界边境 → 移除世界边境 | 开 | 移除自带边境（墙/伤害/红幕/钳制） |
+| 世界边境 → 禁用 30,000,000 移动钳制 | 开 | 解除隐形墙 |
+| 生成与传送边界 → 放开生成/传送检查 | 开 | /tp、/summon、高度查询放行 |
+| 生成与传送边界 → 允许任意坐标生成区块 | 开 | 解除区块合法性检查 |
+| 坐标编码 → 扩展区块坐标编码（28/8/28） | 开 | 渲染/生成上限推到 int32 极限 |
+| 远地稳定性修复 → 阻止超大移动增量卡死 | 开 | 防服务器线程假死 |
+| 远地稳定性修复 → 实体/光照/矿井/aquifer/八叉树溢出修复 | 开 | 抗崩溃补丁 |
+| 远地稳定性修复 → 极远坐标禁用结构生成 | 开 | 避免结构溢出引发 OOM |
+
+## 功能细节
 
 1. **全图无黑暗（Fullbright）**
    - `BlockAndLightGetter#getBrightness` → 恒 15：所有方块/实体顶点光照拉满
@@ -37,29 +64,22 @@ Minecraft **26.2** Fabric mod（无混淆 / Mojang 官方映射）。
    - `Level#getHeight`：去掉 ±30M 分支，直接查询已生成区块
    - `ChunkPos#isValid` → 恒 true：解除 `GenerationChunkHolder` 的硬上限（约 ±33,553,360 格），让区块继续生成
 
+4. **扩展坐标编码与远地稳定性修复**
+   - `SectionPos.asLong` 原版 X/Z 22 位、Y 20 位，在 33,554,432 格回绕导致渲染/生成/光照失效；
+     `SectionPosMixin` 改为 **X/Z 28 位 + Y 8 位**（世界高度 4064 格只需 8 位），
+     渲染/生成上限提升到 ±2,147,483,632 格
+   - `LayerLightSectionStorageMixin`：对 `BlockPos.asLong`（26 位 X/Z）回绕导致的缺失光照 section 容忍（跳过更新），避免 NPE
+   - `EntitySectionStorageMixin`：section 范围查询 `start > end` 溢出保护（不崩溃）
+   - `AquiferMixin` / `MineshaftPiecesMixin` / `ChunkGeneratorMixin`：矿井/结构坐标 int 溢出与 aquifer 巨大网格 OOM 防护
+   - `OctreeMixin`：渲染器 `Octree` 包围盒在 2,147,483,296（= 2^31-352）处溢出导致停止渲染；用 long 计算并平移钳进 int 范围
+
 ## 预期观察到的现象
 
 - 30,000,000 格：原版边境位置，边境已移除，可继续前进
-- **33,554,432 格（原版坐标编码极限，现已被突破）**：
-  - `SectionPos.asLong` 原版 X/Z 22 位、Y 20 位，此处回绕导致渲染/生成/光照全部失效
-  - `SectionPosMixin` 改为 **X/Z 28 位 + Y 8 位**（世界高度 4064 格只需 8 位），
-    渲染/生成上限提升到 ±2,147,483,632 格（约 21 亿格）
-  - `LayerLightSectionStorageMixin`：`BlockPos.asLong` 的 blockNode 仍是 26 位 X/Z，
-    在 33,554,432 回绕会让光照引擎拿到不存在的 section 而 NPE；改为对缺失光照层容忍
-    （跳过更新），回绕区光照自然缺失/错乱
-  - `EntitySectionStorageMixin`：section 范围查询 `start > end` 溢出保护（不崩溃）
-- **更远处（直到约 21 亿格）**：blockNode（26 位）回绕导致光照/方块级结构错乱 =
-  你要观察的"崩坏"；超过 21 亿格后 section 28 位也回绕，各类 long 键结构开始互相覆盖
-- **~2,147,483,296 格（`Octree` 渲染树溢出点）**：渲染器的 `Octree` 用
-  `minX + 512 - 1` 计算包围盒，在 2,147,483,296（= 2^31-352）处溢出成负数导致
-  整个场景停止渲染。`OctreeMixin` 用 long 计算并平移钳进 int 范围（保持 512 幂次跨度），
-  让渲染能一直工作到世界边缘。
-- **±2,147,483,647 格（有符号 32 位 int 极限）= 绝对终点**：
-  - `BlockPos`/`Vec3i` 用 `int` 存坐标，2^31-1 是物理上限，之后 `int` 溢出为负数
-  - 本 mod 的 section 28 位打包恰好设计到此处（最后一个合法 section = 2^27-1）
-  - 越过需要 MCBig 式任意精度坐标（把 BlockPos 改成 BigInteger），那是整套游戏 fork，不是 mod
-  - 探索到极限附近会短时间生成海量区块，容易堆内存耗尽：`build.gradle` 已给
-    `runClient` 加 `-Xmx8G`（16G 内存机器）
+- **33,554,432 格（原版坐标编码极限，现已被突破）**：blockNode（26 位）回绕导致光照/方块级结构错乱 = 你要观察的"崩坏"
+- **~2,147,483,296 格（`Octree` 渲染树溢出点）**：渲染一直工作到世界边缘
+- **±2,147,483,647 格（有符号 32 位 int 极限）= 绝对终点**：`BlockPos`/`Vec3i` 用 `int` 存坐标，2^31-1 是物理上限，之后 `int` 溢出为负数；越过需要 MCBig 式任意精度坐标（把 BlockPos 改成 BigInteger），那是整套游戏 fork，不是 mod
+- 探索到极限附近会短时间生成海量区块，容易堆内存耗尽：`build.gradle` 已给 `runClient` 加 `-Xmx8G`
 
 ## 构建 / 运行
 
@@ -68,7 +88,8 @@ Minecraft **26.2** Fabric mod（无混淆 / Mojang 官方映射）。
 ./gradlew runClient  # 直接启动开发客户端
 ```
 
-装入普通客户端：把 `build/libs/FarLandsProbe-26.2-1.0.0.jar` 放进 `mods/`，需要 Fabric Loader ≥ 0.19.3。
+装入普通客户端：把 `build/libs/FarLandsProbe-26.2-1.0.0.jar` 放进 `mods/`，需要 Fabric Loader ≥ 0.19.3，
+**并同时安装 [Cloth Config](https://modrinth.com/mod/cloth-config)**（必装）；Mod Menu 可选（推荐，用于打开配置界面）。
 
 ## 免责声明
 
