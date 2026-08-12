@@ -10,6 +10,11 @@ All features are enabled by default, but **every feature can be toggled independ
 
 ## Changelog
 
+**v1.1.2** — Restored the far-edge stability patches and cleaned up the codebase:
+- Re-added edge-chunk worldgen guards (`WorldGenRegion`/`StaticCache2D` wrap handling, edge feature-skip, pathfinding-skip, aquifer int-edge guard) so generating near/past the int32 edge **no longer OOMs or freezes** — but **no coordinate wrap-around**: past ±2,147,483,647 terrain simply stops generating and the game stays responsive.
+- Mineshafts generate again (removed the global disable datapack; the overflow-safe midpoint patch covers far coordinates).
+- HMAP-driven cleanup: fullbright centralized, unit tests added (11 passing), magic numbers documented, `.editorconfig` added, support classes moved out of the mixin package (fixed a worldgen crash).
+
 **v1.1.1** — Removed all code that tried to generate chunks beyond the 32-bit limit, and reverted the Y-axis experiment:
 - Section encoding is back to **X/Z 28 bits + Y 8 bits** (X/Z reach the int32 edge ±2,147,483,632 blocks; Y stays at the world-height range)
 - Removed coordinate wrap-around, edge-chunk worldgen hacks (WorldGenRegion/StaticCache2D), edge feature-skip and pathfinding-skip
@@ -26,7 +31,7 @@ All features are enabled by default, but **every feature can be toggled independ
 
 ## The 32-bit limit
 
-> `BlockPos` stores coordinates in a signed 32-bit `int`, so **±2,147,483,647 is the physical ceiling**. The extended section encoding pushes the render/generation limit right up to that edge — but past it, coordinates wrap in `int` and terrain cannot generate. That is the int32 limit; going further would require arbitrary-precision coordinates (a whole game fork, e.g. MCBig-style), which is not possible in a mod.
+> `BlockPos` stores coordinates in a signed 32-bit `int`, so **±2,147,483,647 is the physical ceiling**. The extended section encoding pushes the render/generation limit right up to that edge, and the edge guards keep generation stable there. **Past it, coordinates wrap in `int` and terrain does not generate** — the world does not fold; it simply stops. Going further would require arbitrary-precision coordinates (a whole game fork, e.g. MCBig-style), which is not possible in a mod.
 
 ## C²M (C2ME) compatibility
 
@@ -46,6 +51,7 @@ All features are enabled by default, but **every feature can be toggled independ
 | Spawn & teleport bounds → Relax spawn/teleport checks | On | /tp, /summon, height queries work beyond ±30M |
 | Spawn & teleport bounds → Allow chunk generation everywhere | On | Remove chunk validity checks |
 | Coordinate encoding → Extend section encoding (28/8/28) | On* | Push render/generation limit to the int32 edge (*auto-off under C2ME) |
+| Far-lands stability → Fix chunk generation at the int edge | On | Wrap-aware worldgen distance/cache + edge guards (no OOM/freeze) |
 | Far-lands stability → Guard huge move deltas | On | Prevent server-thread freeze |
 | Far-lands stability → Entity/lighting/mineshaft/aquifer/octree overflow fixes | On | Crash guards |
 | Far-lands stability → Disable structures far out | On | Avoid structure-overflow OOM |
