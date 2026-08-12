@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Fullbright: the Darkness effect's fog is removed entirely.
- * Disabled when fullbright is off (vanilla darkness fog returns; see {@link FullBrightSupport}).
+ * 全亮:完全移除黑暗效果的环境雾。
+ * 全亮关闭时本注入失效(恢复原版黑暗雾;见 {@link FullBrightSupport})。
  */
 @Environment(EnvType.CLIENT)
 @Mixin(DarknessFogEnvironment.class)

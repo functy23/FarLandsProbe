@@ -8,11 +8,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Chunk generation gate removal: vanilla refuses to create chunk holders past
- * ChunkPyramid.MAX_CHUNK_COORDINATE_VALUE (~ +-33,553,360 blocks) and throws
- * in GenerationChunkHolder. We let generation continue so the precision/packing
- * corruption beyond that limit can be observed.
- * Disabled when {@link FarLandsProbeConfig#isAllowChunkGenerationEverywhere()} is off.
+ * 移除区块生成门禁:原版拒绝为超过 ChunkPyramid.MAX_CHUNK_COORDINATE_VALUE
+ * (约 ±33,553,360 格)的区块创建 holder,并在 GenerationChunkHolder 中抛错。
+ * 我们放行生成,以便观察该上限之外的精度/打包损坏。
+ * 当 {@link FarLandsProbeConfig#isAllowChunkGenerationEverywhere()} 关闭时本注入失效。
  */
 @Mixin(ChunkPos.class)
 public class ChunkPosMixin {

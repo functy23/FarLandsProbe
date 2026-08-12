@@ -14,11 +14,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * World border removal: all "is inside bounds" checks always pass (no damage,
- * no interaction blocking, no entity-spawn gate), the physical push wall and
- * red-vignette are disabled, and clamping is a no-op.
- * Disabled when {@link FarLandsProbeConfig#isRemoveWorldBorder()} is off; every
- * injection then falls through to the vanilla implementation.
+ * 移除世界边界:所有"是否在边界内"的判断恒为真(无伤害、无交互阻挡、无实体生成
+ * 门禁),物理推墙与红色暗角被禁用,夹取变为空操作。
+ * 当 {@link FarLandsProbeConfig#isRemoveWorldBorder()} 关闭时,所有注入都回退到
+ * 原版实现。
  */
 @Mixin(WorldBorder.class)
 public abstract class WorldBorderMixin {

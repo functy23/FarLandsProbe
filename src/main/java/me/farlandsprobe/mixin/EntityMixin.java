@@ -8,13 +8,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
- * Entity#absSnapTo(double,double,double) clamps X/Z to +-30,000,000
- * (Mth.clamp(v, -3.0E7, 3.0E7)). ServerGamePacketListenerImpl calls
- * absSnapTo() after every player move packet, which pins the player back to
- * exactly 30,000,000 every tick — the "third wall" (and why the guard logs
- * show the server stuck at 3.0E7 while the client is at 33,554,432.5).
- * These redirects neutralize that clamp (falling back to vanilla when
- * {@link FarLandsProbeConfig#isDisableMovementClamps()} is off).
+ * Entity#absSnapTo(double,double,double) 会把 X/Z 夹到 ±30,000,000
+ * (Mth.clamp(v, -3.0E7, 3.0E7))。ServerGamePacketListenerImpl 在每个玩家移动包
+ * 之后都调用 absSnapTo(),于是玩家每 tick 都被钉回恰好 30,000,000——这就是
+ * "第三堵墙"(也解释了为什么防护日志里服务器卡在 3.0E7 而客户端已在
+ * 33,554,432.5)。这些重定向中和该夹取(当
+ * {@link FarLandsProbeConfig#isDisableMovementClamps()} 关闭时回退到原版)。
  */
 @Mixin(Entity.class)
 public abstract class EntityMixin {

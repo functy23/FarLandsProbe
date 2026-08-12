@@ -17,24 +17,22 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Two far-edge guards:
+ * 两个远边界防护:
  *
- * 1) Structure pieces (mineshaft, ruined portal, ...) compute bounding boxes with
- *    int sums that overflow past roughly +-2^30, feeding garbage into
- *    NoiseChunk/Aquifer and causing OOM. Structure generation beyond a safe
- *    margin (63,000,000 chunks) is skipped entirely.
+ * 1) 结构件(废弃矿井、废弃传送门...)用 int 求和计算包围盒,在约 ±2^30 之后
+ *    会溢出,把垃圾数据喂给 NoiseChunk/Aquifer 并导致 OOM。超过安全裕量
+ *    (63,000,000 个区块)之后的结构生成被整体跳过。
  *
- * 2) Feature generation (ore, trees, ...) probes positions around the chunk; at
- *    the int block edge those probes overflow and request unavailable chunks
- *    ("Requested chunk unavailable during world generation"). The last few
- *    chunks before +-2^31 therefore skip feature decoration.
+ * 2) 特征生成(矿石、树...)会探测区块周边位置;在 int 方块边界处这些探测
+ *    溢出并请求不可用的区块("Requested chunk unavailable during world
+ *    generation")。因此 ±2^31 前的最后几个区块会跳过特征装饰。
  *
- * Both are disabled when the corresponding config toggle is off.
+ * 两者在对应配置开关关闭时失效。
  */
 @Mixin(ChunkGenerator.class)
 public abstract class ChunkGeneratorMixin {
 	private static final long MAX_STRUCTURE_CHUNK = 63_000_000L;
-	private static final long MAX_FEATURE_CHUNK = 134_217_725L; // block 2,147,483,600
+	private static final long MAX_FEATURE_CHUNK = 134_217_725L; // 方块 2,147,483,600
 
 	@Inject(method = "createStructures", at = @At("HEAD"), cancellable = true)
 	private void farlandsprobe$skipStructuresNearCoordinateLimit(

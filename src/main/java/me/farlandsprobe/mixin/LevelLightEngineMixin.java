@@ -9,9 +9,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Fullbright: raw brightness queries (used by crop growth, mob spawning checks,
- * pathfinding, debug overlays) always report 15.
- * Disabled when fullbright is off (falls back to vanilla; see {@link FullBrightSupport}).
+ * 全亮:原始亮度查询(作物生长、怪物生成判定、寻路、调试覆盖层)恒为 15。
+ * 全亮关闭时本注入失效(回退到原版;见 {@link FullBrightSupport})。
  */
 @Mixin(LevelLightEngine.class)
 public abstract class LevelLightEngineMixin {

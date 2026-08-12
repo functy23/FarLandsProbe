@@ -10,12 +10,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
- * Entity-section lookups build packed-long ranges with
- * subSet(asLong(x, 0, 0), asLong(x, -1, -1) + 1). At the maximum positive
- * section coordinate (~33,554,416 blocks) the +1 overflows to Long.MIN_VALUE,
- * making start > end and crashing the game (crosshair raycast etc.).
- * Guard the range so it degrades to an empty set instead of crashing.
- * Disabled when {@link FarLandsProbeConfig#isFixEntitySectionOverflow()} is off.
+ * 实体 section 查询会用 subSet(asLong(x, 0, 0), asLong(x, -1, -1) + 1) 构建打包
+ * long 的范围。在最大正 section 坐标(约 33,554,416 格)处,+1 溢出成
+ * Long.MIN_VALUE,导致 start > end 并使游戏崩溃(如准星射线检测)。
+ * 给范围加防护:退化成空集合而不是崩溃。
+ * 当 {@link FarLandsProbeConfig#isFixEntitySectionOverflow()} 关闭时本注入失效。
  */
 @Mixin(EntitySectionStorage.class)
 public abstract class EntitySectionStorageMixin<T extends EntityAccess> {

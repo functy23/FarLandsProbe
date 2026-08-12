@@ -13,15 +13,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Near the +-2^31 block limit, ChunkPos.getMinBlockX()/getMaxBlockX() already
- * overflow int, and vanilla's grid-size arithmetic (all int) then overflows the
- * product `gridSizeX * gridSizeY * gridSizeZ` into a huge positive number, so
- * `new long[totalGridSize]` exhausts the heap (OutOfMemoryError during worldgen).
+ * 在接近 ±2^31 方块上限处,ChunkPos.getMinBlockX()/getMaxBlockX() 的 int 已经
+ * 溢出,原版的网格尺寸运算(全 int)接着把乘积 `gridSizeX * gridSizeY *
+ * gridSizeZ` 溢出成巨大的正数,于是 `new long[totalGridSize]` 耗尽堆内存
+ * (世界生成期间的 OutOfMemoryError)。
  *
- * Guard with long math: if any block coordinate is within 2,000,000,000 of the
- * int edge (i.e. vanilla's +/-5 offsets would overflow), or the (absurd) grid is
- * too large, disable the aquifer instead of allocating.
- * Disabled when {@link FarLandsProbeConfig#isFixAquiferOverflow()} is off.
+ * 用 long 运算防护:只要任一方块坐标距 int 边界 2,000,000,000 以内(即原版的
+ * ±5 偏移会溢出),或(荒谬的)网格过大,就禁用含水层而不是分配内存。
+ * 当 {@link FarLandsProbeConfig#isFixAquiferOverflow()} 关闭时本注入失效。
  */
 @Mixin(Aquifer.class)
 public interface AquiferMixin {
@@ -53,7 +52,7 @@ public interface AquiferMixin {
 		long minBlockZ = pos.getMinBlockZ();
 		long maxBlockZ = pos.getMaxBlockZ();
 
-		// 块坐标已接近/越过 int 边界：vanilla 的 +/-5 与 int 连乘必然溢出 → 直接禁用。
+		// 块坐标已接近/越过 int 边界：原版的 +/-5 与 int 连乘必然溢出 → 直接禁用。
 		if (minBlockX < -INT_EDGE_SAFE_LIMIT || maxBlockX > INT_EDGE_SAFE_LIMIT
 			|| minBlockZ < -INT_EDGE_SAFE_LIMIT || maxBlockZ > INT_EDGE_SAFE_LIMIT) {
 			LoggerFactory.getLogger("farlandsprobe").warn(

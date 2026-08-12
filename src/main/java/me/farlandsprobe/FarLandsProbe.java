@@ -11,8 +11,8 @@ public class FarLandsProbe implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// Register the Cloth Config screen; saves defaults to config/farlandsprobe.json
-		// so the file exists for the user to edit even before opening the UI.
+		// 注册 Cloth Config 界面;先保存默认值到 config/farlandsprobe.json,
+		// 这样即使没打开过界面,文件也已存在供用户编辑。
 		FarLandsProbeConfig.register();
 		FarLandsProbeConfig.save();
 		if (FarLandsProbeConfig.isC2meCompatMode()) {

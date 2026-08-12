@@ -5,9 +5,8 @@ import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.autoconfig.AutoConfigClient;
 
 /**
- * Mod Menu integration: exposes the Cloth Config screen so it can be opened from
- * the mod list. Mod Menu itself is optional at runtime; this entrypoint is only
- * loaded when Mod Menu is installed.
+ * Mod Menu 集成:把 Cloth Config 界面暴露出来,以便从模组列表打开。
+ * Mod Menu 本身在运行时是可选的;本入口只在安装了 Mod Menu 时被加载。
  */
 public class ModMenuIntegration implements ModMenuApi {
 	@Override

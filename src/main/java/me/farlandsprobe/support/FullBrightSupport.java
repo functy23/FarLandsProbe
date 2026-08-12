@@ -3,12 +3,11 @@ package me.farlandsprobe.support;
 import me.farlandsprobe.config.FarLandsProbeConfig;
 
 /**
- * Central place for the fullbright feature: every fullbright mixin asks
- * {@link #isEnabled()} and uses {@link #MAX_LIGHT}, so changing the feature
- * (toggle name, max light value) touches one class instead of four mixins.
+ * 全亮功能的集中点:每个全亮 mixin 都查询 {@link #isEnabled()} 并使用
+ * {@link #MAX_LIGHT},因此改功能(开关名、最大亮度值)只动这一个类,而不是四个 mixin。
  */
 public final class FullBrightSupport {
-	/** Maximum light level forced everywhere when fullbright is on. */
+	/** 全亮开启时全局强制的最大亮度值。 */
 	public static final int MAX_LIGHT = 15;
 
 	private FullBrightSupport() {

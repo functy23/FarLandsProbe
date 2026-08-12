@@ -14,12 +14,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * PathNavigationRegion builds a chunk array whose size is derived from
- * (endSection - startSection). At the int block edge (+-2^31) that difference
- * wraps and the size becomes negative -> NegativeArraySizeException while a mob
- * (e.g. nautilus) pathfinds. Once a mob is beyond ~2,000,000,000 blocks we
- * simply skip pathfinding (return null) so the game does not crash there.
- * Disabled when {@link FarLandsProbeConfig#isFixChunkBoundaryGeneration()} is off.
+ * PathNavigationRegion 会构建一个尺寸由 (endSection - startSection) 决定的区块
+ * 数组。在 int 方块边界(±2^31)处该差值回绕、尺寸变成负数 → 生物(如鹦鹉螺)寻路
+ * 时抛 NegativeArraySizeException。一旦生物超过约 2,000,000,000 格,我们直接跳过
+ * 寻路(返回 null),避免游戏在那里崩溃。
+ * 当 {@link FarLandsProbeConfig#isFixChunkBoundaryGeneration()} 关闭时本注入失效。
  */
 @Mixin(PathNavigation.class)
 public abstract class PathNavigationMixin {

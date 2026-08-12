@@ -10,6 +10,12 @@
 
 ## 更新日志
 
+**v1.2.1** — 维护性清理（无行为变更）：
+- 全部 Java 注释统一为中文（原中英混杂）。
+- 回绕周期 2^28 去重：统一到 `SectionEncoding#WRAP_PERIOD`（原在 `WorldGenRegionMixin`/`StaticCache2DMixin` 各定义一份）。
+- `WorldGenRegion#wrapChunkRequest` 降嵌套：偏移数组静态化 + 提取 `lookupWrappedChunk` 辅助方法，循环嵌套降到 3 层。
+- `FarLandsProbeConfig`：每个开关补充「功能 → mixin」映射注释，README 不再是理解功能全貌的唯一索引。
+
 **v1.2.0** — 多版本支持：
 - 新增 **Minecraft 26.1.2** 构建（26.1.2 与 26.2 对所有 mixin 目标 API 完全一致，源码零差异），与 26.2 共用同一份源码。
 - 构建改为双子项目（根 = 26.2，`mc-26.1.2` = 26.1.2），`./gradlew build` 一次产出两个 jar。

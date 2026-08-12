@@ -10,10 +10,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Fullbright: every block/entity vertex light is forced to 15 (max).
- * This is the single choke point used by block models (LightCoordsUtil.BrightnessGetter)
- * and entity rendering (EntityRenderer#getSkyLight/getBlockLight).
- * Disabled when fullbright is off (see {@link FullBrightSupport}).
+ * 全亮:所有方块/实体顶点光强制为 15(最大值)。
+ * 这是方块模型(LightCoordsUtil.BrightnessGetter)与实体渲染
+ * (EntityRenderer#getSkyLight/getBlockLight)共用的唯一汇聚点。
+ * 全亮关闭时本注入失效(见 {@link FullBrightSupport})。
  */
 @Mixin(BlockAndLightGetter.class)
 public interface BlockAndLightGetterMixin {

@@ -15,20 +15,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
- * Two problems at the +-33,554,432-block coordinate-encoding limit:
+ * ±33,554,432 方块坐标编码边界上的两个问题:
  *
- * 1) The server clamps every player/vehicle move-packet target to +-30,000,000
- *    (clampHorizontal) and absSnapTo()s the clamped position, so walking past
- *    30M (or dropping out of flight) instantly snaps the player back. This
- *    redirect neutralizes that clamp (falling back to vanilla when
- *    {@link FarLandsProbeConfig#isDisableMovementClamps()} is off).
+ * 1) 服务器会把每个玩家/载具移动包的目标坐标夹到 ±30,000,000(clampHorizontal),
+ *    并 absSnapTo() 到夹取后的位置,因此走过 30M(或从飞行状态落下)会瞬间被
+ *    拉回。本重定向中和该夹取(当
+ *    {@link FarLandsProbeConfig#isDisableMovementClamps()} 关闭时回退到原版)。
  *
- * 2) Once the coordinate encoding wraps, a move packet can arrive with a delta
- *    of tens of millions of blocks; Entity.move() then runs BlockCollisions
- *    over a gigantic AABB and the server thread hangs ("half-freeze": terrain
- *    stops loading, commands stop working, UI keeps rendering). We log the
- *    offending delta and snap directly to the target instead of colliding
- *    (only when {@link FarLandsProbeConfig#isGuardHugeMoveDelta()} is on).
+ * 2) 坐标编码一旦回绕,移动包可能带着数千万格的位移到达;Entity.move() 会对一个
+ *    巨大的 AABB 跑 BlockCollisions,服务器线程因此卡死("半冻结":地形停止加载、
+ *    指令失效、UI 仍能渲染)。我们记录异常位移并直接瞬移到目标,不做碰撞
+ *    (仅在 {@link FarLandsProbeConfig#isGuardHugeMoveDelta()} 开启时生效)。
  */
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerGamePacketListenerImplMixin {
@@ -52,7 +49,7 @@ public abstract class ServerGamePacketListenerImplMixin {
 			return;
 		}
 
-		// delta length > 4096 blocks = coordinate-wrap artifact (normal movement is far smaller).
+		// 位移长度 > 4096 格 = 坐标回绕产物(正常移动远小于此)。
 		double lenSq = delta.lengthSqr();
 		if (lenSq > 4096.0 * 4096.0) {
 			LOGGER.warn(
@@ -60,8 +57,7 @@ public abstract class ServerGamePacketListenerImplMixin {
 				Math.sqrt(lenSq), instance.getX(), instance.getY(), instance.getZ(),
 				delta.x, delta.y, delta.z, this.lastGoodX, this.lastGoodZ
 			);
-			// setPos directly skips collision: the entity teleports through walls (acceptable -
-			// after coordinate wrap the collision volume itself is meaningless).
+			// setPos 直接瞬移、跳过碰撞:实体穿墙(可接受——回绕后碰撞体积本身已无意义)。
 			instance.setPos(instance.getX() + delta.x, instance.getY() + delta.y, instance.getZ() + delta.z);
 		} else {
 			instance.move(moverType, delta);

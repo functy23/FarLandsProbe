@@ -5,10 +5,9 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.state.LightmapRenderState;
 
 /**
- * Client-side half of fullbright: applies the maxed lightmap values to a
- * {@link LightmapRenderState}. Kept out of {@code FullBrightSupport} (which is
- * shared with the dedicated server) so the common class never references a
- * client-only type.
+ * 全亮的客户端半边:把拉满的光图值应用到 {@link LightmapRenderState}。
+ * 放在 {@code FullBrightSupport}(与专用服务器共享)之外,公共类就不必引用
+ * 仅客户端存在的类型。
  */
 @Environment(EnvType.CLIENT)
 public final class LightmapFullBrightSupport {
@@ -16,7 +15,7 @@ public final class LightmapFullBrightSupport {
 	}
 
 	public static void applyToLightmap(LightmapRenderState renderState) {
-		// skyFactor/blockFactor max 15 (MC light level cap); brightness normalized 1.0; darkness off 0.0.
+		// skyFactor/blockFactor 最大 15(MC 光照等级上限);brightness 归一化为 1.0;黑暗效果关闭为 0.0。
 		renderState.skyFactor = 15.0F;
 		renderState.blockFactor = 15.0F;
 		renderState.darknessEffectScale = 0.0F;

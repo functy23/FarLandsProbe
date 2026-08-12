@@ -13,7 +13,7 @@ class OverflowSafeMathTest {
 
 	@Test
 	void midpointAtIntMaxDoesNotOverflow() {
-		// vanilla (a+b)/2 would overflow here
+		// 原版 (a+b)/2 在这里会溢出
 		int a = Integer.MAX_VALUE - 1;
 		int b = Integer.MAX_VALUE;
 		assertEquals(Integer.MAX_VALUE - 1, OverflowSafeMath.midpoint(a, b));
@@ -28,7 +28,7 @@ class OverflowSafeMathTest {
 
 	@Test
 	void mineshaftCorridorScenario() {
-		// near block coordinate 2^30, like mineshaft corridors in the far lands
+		// 方块坐标 2^30 附近,与远地废弃矿井走廊的情况一致
 		int x0 = 1073741824; // 2^30
 		int x1 = 1073741834;
 		assertEquals(1073741829, OverflowSafeMath.midpoint(x0, x1));
@@ -36,7 +36,7 @@ class OverflowSafeMathTest {
 
 	@Test
 	void midpointAcrossFullIntRange() {
-		// (a & b) + ((a ^ b) >> 1) must handle b - a wrapping the full int range.
+		// (a & b) + ((a ^ b) >> 1) 必须能处理 b - a 回绕整个 int 范围的情况。
 		assertEquals(-1, OverflowSafeMath.midpoint(Integer.MIN_VALUE, Integer.MAX_VALUE));
 		assertEquals(0, OverflowSafeMath.midpoint(-1, 1));
 	}

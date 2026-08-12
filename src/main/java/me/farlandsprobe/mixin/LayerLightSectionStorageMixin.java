@@ -16,13 +16,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * The lighting engine stores block nodes (BlockPos.asLong, 26-bit X/Z) in its
- * queues. Past +-33,554,432 blocks those wrap, so the engine can dequeue a
- * node whose section has no light data -> vanilla throws NPE in
- * getStoredLevel/setStoredLevel. We make both tolerant: missing sections are
- * skipped (light just stays uncomputed there = visible corruption, which is
- * exactly what this mod exists to observe).
- * Disabled when {@link FarLandsProbeConfig#isFixLightSectionCrash()} is off.
+ * 光照引擎把方块节点(BlockPos.asLong,X/Z 26 位)存进队列。超过 ±33,554,432
+ * 方块后这些节点回绕,引擎可能取出一个所属 section 没有光照数据的节点 → 原版在
+ * getStoredLevel/setStoredLevel 里抛 NPE。我们让两者都容错:缺失的 section 直接跳过
+ * (该处光照保持未计算 = 可见损坏,正是本模组要观察的现象)。
+ * 当 {@link FarLandsProbeConfig#isFixLightSectionCrash()} 关闭时本注入失效。
  */
 @Mixin(LayerLightSectionStorage.class)
 public abstract class LayerLightSectionStorageMixin<M extends DataLayerStorageMap<M>> {
@@ -38,7 +36,7 @@ public abstract class LayerLightSectionStorageMixin<M extends DataLayerStorageMa
 			return;
 		}
 		long sectionNode = SectionPos.blockToSection(blockNode);
-		// updating=true: read in the update phase, matching vanilla's internal call sites.
+		// updating=true:在更新阶段读取,与原版内部调用点保持一致。
 		DataLayer layer = this.getDataLayer(sectionNode, true);
 		cir.setReturnValue(
 			layer == null
@@ -57,7 +55,7 @@ public abstract class LayerLightSectionStorageMixin<M extends DataLayerStorageMa
 			return;
 		}
 		long sectionNode = SectionPos.blockToSection(blockNode);
-		// updating=true: read in the update phase, matching vanilla's internal call sites.
+		// updating=true:在更新阶段读取,与原版内部调用点保持一致。
 		DataLayer layer = this.getDataLayer(sectionNode, true);
 		if (layer == null) {
 			ci.cancel();

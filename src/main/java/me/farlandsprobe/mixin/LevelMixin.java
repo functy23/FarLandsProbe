@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Bounds relaxation: allow spawning, teleporting, block interaction and height
- * queries anywhere, including far beyond the vanilla +-30,000,000 block limit.
- * Disabled when {@link FarLandsProbeConfig#isRelaxSpawnAndTeleportBounds()} is off.
+ * 放宽边界:允许任意位置的生成、传送、方块交互与高度查询,包括远超原版
+ * ±30,000,000 方块上限的地方。
+ * 当 {@link FarLandsProbeConfig#isRelaxSpawnAndTeleportBounds()} 关闭时本注入失效。
  */
 @Mixin(Level.class)
 public abstract class LevelMixin {
@@ -45,7 +45,7 @@ public abstract class LevelMixin {
 		}
 		Level self = (Level) (Object) this;
 		if (self.hasChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z))) {
-			// +1: height query returns the block above the top non-air block (same semantics as vanilla).
+			// +1:高度查询返回顶部非空气方块的上一个方块(与原版语义一致)。
 			cir.setReturnValue(self.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z)).getHeight(type, x & 15, z & 15) + 1);
 		} else {
 			cir.setReturnValue(self.getMinY());

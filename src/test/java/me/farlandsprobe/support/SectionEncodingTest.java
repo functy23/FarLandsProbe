@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 class SectionEncodingTest {
-	private static final int MAX_XZ_SECTION = (1 << 27) - 1; // 28-bit signed max
-	private static final int MIN_XZ_SECTION = -(1 << 27); // 28-bit signed min
-	private static final int MAX_Y_SECTION = (1 << 7) - 1; // 8-bit signed max
-	private static final int MIN_Y_SECTION = -(1 << 7); // 8-bit signed min
+	private static final int MAX_XZ_SECTION = (1 << 27) - 1; // 28 位有符号最大值
+	private static final int MIN_XZ_SECTION = -(1 << 27); // 28 位有符号最小值
+	private static final int MAX_Y_SECTION = (1 << 7) - 1; // 8 位有符号最大值
+	private static final int MIN_Y_SECTION = -(1 << 7); // 8 位有符号最小值
 
 	@Test
 	void roundTripsNormalCoords() {

@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Fullbright: after the lightmap render state is extracted, force sky/block
- * factors to maximum, zero out the darkness effect and max out gamma/brightness.
- * Disabled when fullbright is off (see {@link FullBrightSupport}).
+ * 全亮:光图渲染状态提取完成后,把天空/方块因子强制为最大,清零黑暗效果,并把
+ * gamma/亮度拉到上限。
+ * 全亮关闭时本注入失效(见 {@link FullBrightSupport})。
  */
 @Environment(EnvType.CLIENT)
 @Mixin(LightmapRenderStateExtractor.class)

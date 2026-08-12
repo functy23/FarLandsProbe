@@ -17,14 +17,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * The renderer's Octree wraps the visible area in a power-of-two BoundingBox.
- * Near the +-2^31 block limit, `minX + 512 - 1` overflows int, inverting the
- * box, which makes the whole scene stop rendering. We rebuild the box with
- * long math, shifting it to stay inside the int range while keeping the
- * 512-block power-of-two span (so the octree subdivision invariant holds).
- * The final `root` field is replaced via a cached reflective Field because the
- * JVM forbids writing a final field from an injected method.
- * Disabled when {@link FarLandsProbeConfig#isFixOctreeOverflow()} is off.
+ * 渲染器的 Octree 把可见区域包进一个 2 的幂大小的 BoundingBox。
+ * 在接近 ±2^31 方块上限处,`minX + 512 - 1` 的 int 溢出会使包围盒反转,整个场景
+ * 停止渲染。我们用 long 运算重建包围盒,把它平移回 int 范围内,同时保持 512 格
+ * 的 2 的幂跨度(这样 octree 的细分不变量仍然成立)。
+ * 最后的 `root` 字段通过缓存反射 Field 写入,因为 JVM 禁止从注入方法里写 final 字段。
+ * 当 {@link FarLandsProbeConfig#isFixOctreeOverflow()} 关闭时本注入失效。
  */
 @Environment(EnvType.CLIENT)
 @Mixin(Octree.class)
@@ -89,7 +87,7 @@ public abstract class OctreeMixin {
 			maxZ = minZ + boxSize - 1;
 		}
 
-		// section 坐标 1.3e8 x 16 blocks ~= 2.08e9, close to the int edge: only then log diagnostics.
+		// section 坐标 1.3e8 x 16 格 ≈ 2.08e9,已接近 int 边界:此时才打印诊断日志。
 		if (Math.abs(cameraSection.x()) > 130000000 || Math.abs(cameraSection.z()) > 130000000) {
 			LOGGER.info(
 				"[farlandsprobe] octree box section=({},{},{}) box=({},{},{})-({},{},{}) clampNeeded={}",

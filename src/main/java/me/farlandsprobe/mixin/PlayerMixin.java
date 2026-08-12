@@ -8,11 +8,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
- * 26.x vanilla hard-clamps the player's X/Z back to +-29,999,999 every tick
- * (Player#tick), which acts as an invisible wall at the old border position:
- * you cannot walk past it, and after /tp you get yanked back on the next tick.
- * These redirects neutralize that clamp (falling back to vanilla Mth.clamp when
- * {@link FarLandsProbeConfig#isDisableMovementClamps()} is off).
+ * 26.x 原版每 tick 都会把玩家的 X/Z 硬夹回 ±29,999,999(Player#tick),这在旧边界
+ * 位置形成了一堵隐形墙:你走不过去,而且 /tp 之后下一 tick 会被拉回来。
+ * 这些重定向中和该夹取(当 {@link FarLandsProbeConfig#isDisableMovementClamps()}
+ * 关闭时回退到原版 Mth.clamp)。
  */
 @Mixin(Player.class)
 public abstract class PlayerMixin {

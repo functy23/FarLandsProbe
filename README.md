@@ -10,6 +10,12 @@ All features are enabled by default, but **every feature can be toggled independ
 
 ## Changelog
 
+**v1.2.1** — Maintenance pass (no behavior change):
+- All Java comments unified to Chinese (previously mixed EN/ZH).
+- Deduplicated the 2^28 wrap period: single source in `SectionEncoding#WRAP_PERIOD` (was defined twice, in `WorldGenRegionMixin` and `StaticCache2DMixin`).
+- Flattened `WorldGenRegion#wrapChunkRequest`: static offset array + extracted `lookupWrappedChunk` helper, loop nesting down to 3 levels.
+- `FarLandsProbeConfig`: every toggle now documents its feature → mixin mapping, so the README is no longer the only index of what each option controls.
+
 **v1.2.0** — Multi-version support:
 - Added a **Minecraft 26.1.2** build. Every mixin target is API-identical between 26.1.2 and 26.2, so both versions share the exact same sources with zero differences.
 - The build is now a twin-project setup (root = 26.2, `mc-26.1.2` = 26.1.2); `./gradlew build` produces both jars in one run.
