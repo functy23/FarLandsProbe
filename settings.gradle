@@ -7,3 +7,7 @@ pluginManagement {
 }
 
 rootProject.name = "FarLandsProbe-26.2"
+
+// Multi-version support: the root project builds for MC 26.2, and the
+// mc-26.1.2 subproject builds the same sources for MC 26.1.2.
+include "mc-26.1.2"

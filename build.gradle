@@ -6,6 +6,11 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
+// Distinct artifact name so both version jars can coexist: farlandsprobe-26.2-<version>.jar
+base {
+	archivesName = "farlandsprobe-26.2"
+}
+
 repositories {
 	maven { url = "https://api.modrinth.com/maven" }
 }
@@ -26,9 +31,9 @@ dependencies {
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 	// Cloth Config is required (config screens + config file).
-	implementation "maven.modrinth:cloth-config:26.2.155+fabric"
+	implementation "maven.modrinth:cloth-config:${project.cloth_config_version}"
 	// Mod Menu is optional at runtime; only used for the config screen entry point.
-	implementation "maven.modrinth:modmenu:20.0.1"
+	implementation "maven.modrinth:modmenu:${project.modmenu_version}"
 
 	// Unit tests for the Minecraft-free helpers (SectionEncoding / OverflowSafeMath).
 	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
@@ -40,7 +45,7 @@ processResources {
 	inputs.property "version", version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": version
+		expand "version": version, "minecraft_version": project.minecraft_version
 	}
 }
 

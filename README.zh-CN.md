@@ -2,13 +2,17 @@
 
 **[English](README.md) | [简体中文](README.zh-CN.md)**
 
-一个 Minecraft **26.2** Fabric 模组（无混淆 / Mojang 官方映射），用于探索世界边界之外、精度开始崩坏的地形。
+一个 Minecraft **26.2 / 26.1.2** Fabric 模组（无混淆 / Mojang 官方映射），用于探索世界边界之外、精度开始崩坏的地形。同一份源码同时构建两个游戏版本。
 
 > ⚠️ **注意：本 mod 并非「恢复边境之地（Far Lands）」。** 经典「边境之地」是 Beta 1.8 之前地形生成器在 12,550,824 格处产生的海量噪声地形 bug，本 mod **不会**恢复那种地形。它做的是相反的事：**移除现代版本的世界边境与坐标限制**，让你越过限制直接观察精度崩坏的现象（光照错乱、区块结构覆盖、渲染消失等）。想要原汁原味的边境之地地形，请去找真正的 Far Lands 恢复类 mod。
 
 所有功能默认开启，但**每个功能都可以独立开关**。
 
 ## 更新日志
+
+**v1.2.0** — 多版本支持：
+- 新增 **Minecraft 26.1.2** 构建（26.1.2 与 26.2 对所有 mixin 目标 API 完全一致，源码零差异），与 26.2 共用同一份源码。
+- 构建改为双子项目（根 = 26.2，`mc-26.1.2` = 26.1.2），`./gradlew build` 一次产出两个 jar。
 
 **v1.1.2** — 恢复边界稳定性修复，并清理代码库：
 - 重新加入边界区块生成防护（`WorldGenRegion`/`StaticCache2D` 回绕处理、边界 feature 跳过、寻路跳过、aquifer int 边界防御），在接近/越过 int32 边界生成时**不再 OOM 或卡死**——但**没有坐标回绕**：越过 ±2,147,483,647 后地形停止生成，游戏保持响应。
@@ -69,11 +73,16 @@
 ## 构建 / 运行
 
 ```bash
-./gradlew build      # 产出 build/libs/FarLandsProbe-26.2-<version>.jar
-./gradlew runClient  # 直接启动开发客户端
+./gradlew build                    # 一次产出两个版本：
+                                   #   build/libs/farlandsprobe-26.2-<version>.jar
+                                   #   mc-26.1.2/build/libs/farlandsprobe-26.1.2-<version>.jar
+./gradlew build -x :mc-26.1.2:build   # 只构建 26.2
+./gradlew :mc-26.1.2:build        # 只构建 26.1.2
+./gradlew runClient               # 启动 26.2 开发客户端
+./gradlew :mc-26.1.2:runClient    # 启动 26.1.2 开发客户端
 ```
 
-装入普通客户端：把 jar 放进 `mods/`，需要 Fabric Loader ≥ 0.19.3，**并同时安装 [Cloth Config](https://modrinth.com/mod/cloth-config)**（必装）；Mod Menu 可选（推荐，用于打开配置界面）。
+装入普通客户端：把对应游戏版本的 jar 放进 `mods/`，需要 Fabric Loader ≥ 0.19.3，**并同时安装 [Cloth Config](https://modrinth.com/mod/cloth-config)**（必装）；Mod Menu 可选（推荐，用于打开配置界面）。
 
 ## 免责声明
 

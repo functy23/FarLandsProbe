@@ -1,0 +1,85 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'maven-publish'
+}
+
+version = rootProject.mod_version
+group = rootProject.maven_group
+
+repositories {
+	maven { url = "https://api.modrinth.com/maven" }
+}
+
+// Distinct artifact name so both version jars can coexist: farlandsprobe-26.1.2-<version>.jar
+base {
+	archivesName = "farlandsprobe-26.1.2"
+}
+
+// The 26.1.2 build shares the exact same sources as the root (26.2) project;
+// the two Minecraft versions are API-identical for every mixin target, so a
+// single source tree builds for both.
+sourceSets {
+	main {
+		java.srcDirs = ["../src/main/java"]
+		resources.srcDirs = ["../src/main/resources"]
+	}
+	test {
+		java.srcDirs = ["../src/test/java"]
+	}
+}
+
+loom {
+	accessWidenerPath = file("../src/main/resources/farlandsprobe.accesswidener")
+
+	runs {
+		client {
+			// far-lands exploration generates huge amounts of terrain; give the game headroom.
+			vmArgs "-Xmx8G"
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:26.1.2"
+	implementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:0.155.2+26.1.2"
+	// Cloth Config is required (config screens + config file).
+	implementation "maven.modrinth:cloth-config:26.1.154+fabric"
+	// Mod Menu is optional at runtime; only used for the config screen entry point.
+	implementation "maven.modrinth:modmenu:18.0.0"
+
+	// Unit tests for the Minecraft-free helpers (SectionEncoding / OverflowSafeMath).
+	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+
+	def minecraftVersion = "26.1.2"
+	inputs.property "minecraft_version", minecraftVersion
+
+	filesMatching("fabric.mod.json") {
+		expand "version": version, "minecraft_version": minecraftVersion
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+}
+
+test {
+	useJUnitPlatform()
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+jar {
+	def projectName = project.name
+	inputs.property "projectName", projectName
+}

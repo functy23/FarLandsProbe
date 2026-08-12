@@ -2,13 +2,17 @@
 
 **[English](README.md) | [简体中文](README.zh-CN.md)**
 
-A Minecraft **26.2** Fabric mod (deobfuscated / Mojang official mappings) for exploring what happens past the world edge, where precision starts to break down.
+A Minecraft **26.2 / 26.1.2** Fabric mod (deobfuscated / Mojang official mappings) for exploring what happens past the world edge, where precision starts to break down. The same source tree builds for both game versions.
 
 > ⚠️ **Note: this mod does NOT restore the Far Lands.** The classic "Far Lands" is a Beta-1.8-era noise-wall terrain bug at ~12,550,824 blocks. This mod does the opposite: it removes the modern world border and coordinate limits so you can push past them and observe precision corruption (lighting corruption, chunk structures overlapping, rendering vanishing, ...). Want the authentic Far Lands terrain? Look for a real Far Lands restoration mod.
 
 All features are enabled by default, but **every feature can be toggled independently**.
 
 ## Changelog
+
+**v1.2.0** — Multi-version support:
+- Added a **Minecraft 26.1.2** build. Every mixin target is API-identical between 26.1.2 and 26.2, so both versions share the exact same sources with zero differences.
+- The build is now a twin-project setup (root = 26.2, `mc-26.1.2` = 26.1.2); `./gradlew build` produces both jars in one run.
 
 **v1.1.2** — Restored the far-edge stability patches and cleaned up the codebase:
 - Re-added edge-chunk worldgen guards (`WorldGenRegion`/`StaticCache2D` wrap handling, edge feature-skip, pathfinding-skip, aquifer int-edge guard) so generating near/past the int32 edge **no longer OOMs or freezes** — but **no coordinate wrap-around**: past ±2,147,483,647 terrain simply stops generating and the game stays responsive.
@@ -70,11 +74,16 @@ All features are enabled by default, but **every feature can be toggled independ
 ## Build / Run
 
 ```bash
-./gradlew build      # produces build/libs/FarLandsProbe-26.2-<version>.jar
-./gradlew runClient  # launches the dev client directly
+./gradlew build                      # produces both jars in one run:
+                                     #   build/libs/farlandsprobe-26.2-<version>.jar
+                                     #   mc-26.1.2/build/libs/farlandsprobe-26.1.2-<version>.jar
+./gradlew build -x :mc-26.1.2:build  # 26.2 only
+./gradlew :mc-26.1.2:build           # 26.1.2 only
+./gradlew runClient                  # launches the 26.2 dev client
+./gradlew :mc-26.1.2:runClient       # launches the 26.1.2 dev client
 ```
 
-Install: put the jar into `mods/`, requires Fabric Loader ≥ 0.19.3, **plus [Cloth Config](https://modrinth.com/mod/cloth-config)** (required); Mod Menu is optional (recommended for the config screen).
+Install: put the jar matching your game version into `mods/`, requires Fabric Loader ≥ 0.19.3, **plus [Cloth Config](https://modrinth.com/mod/cloth-config)** (required); Mod Menu is optional (recommended for the config screen).
 
 ## Disclaimer
 
