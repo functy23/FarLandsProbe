@@ -38,6 +38,7 @@ public abstract class LayerLightSectionStorageMixin<M extends DataLayerStorageMa
 			return;
 		}
 		long sectionNode = SectionPos.blockToSection(blockNode);
+		// updating=true: read in the update phase, matching vanilla's internal call sites.
 		DataLayer layer = this.getDataLayer(sectionNode, true);
 		cir.setReturnValue(
 			layer == null
@@ -56,6 +57,7 @@ public abstract class LayerLightSectionStorageMixin<M extends DataLayerStorageMa
 			return;
 		}
 		long sectionNode = SectionPos.blockToSection(blockNode);
+		// updating=true: read in the update phase, matching vanilla's internal call sites.
 		DataLayer layer = this.getDataLayer(sectionNode, true);
 		if (layer == null) {
 			ci.cancel();

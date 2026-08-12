@@ -41,6 +41,8 @@ public interface AquiferMixin {
 			return;
 		}
 
+		// Empirical thresholds: a normal chunk's aquifer grid is far smaller; anything above
+		// is treated as garbage coordinates (gridSizeX/Y/Z are cell counts).
 		final long MAX_AQUIFER_GRID = 4_000_000L;
 		final long MAX_GRID_SIDE = 4096L;
 

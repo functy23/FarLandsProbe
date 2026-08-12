@@ -45,6 +45,7 @@ public abstract class LevelMixin {
 		}
 		Level self = (Level) (Object) this;
 		if (self.hasChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z))) {
+			// +1: height query returns the block above the top non-air block (same semantics as vanilla).
 			cir.setReturnValue(self.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z)).getHeight(type, x & 15, z & 15) + 1);
 		} else {
 			cir.setReturnValue(self.getMinY());

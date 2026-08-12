@@ -33,4 +33,11 @@ class OverflowSafeMathTest {
 		int x1 = 1073741834;
 		assertEquals(1073741829, OverflowSafeMath.midpoint(x0, x1));
 	}
+
+	@Test
+	void midpointAcrossFullIntRange() {
+		// (a & b) + ((a ^ b) >> 1) must handle b - a wrapping the full int range.
+		assertEquals(-1, OverflowSafeMath.midpoint(Integer.MIN_VALUE, Integer.MAX_VALUE));
+		assertEquals(0, OverflowSafeMath.midpoint(-1, 1));
+	}
 }

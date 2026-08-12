@@ -53,4 +53,12 @@ class SectionEncodingTest {
 		assertEquals(MAX_XZ_SECTION, SectionEncoding.x(zero));
 		assertEquals(MIN_XZ_SECTION, SectionEncoding.z(zero));
 	}
+
+	@Test
+	void roundTripsAllAxesExtremeTogether() {
+		long node = SectionEncoding.asLong(MAX_XZ_SECTION, MIN_Y_SECTION, MIN_XZ_SECTION);
+		assertEquals(MAX_XZ_SECTION, SectionEncoding.x(node));
+		assertEquals(MIN_Y_SECTION, SectionEncoding.y(node));
+		assertEquals(MIN_XZ_SECTION, SectionEncoding.z(node));
+	}
 }

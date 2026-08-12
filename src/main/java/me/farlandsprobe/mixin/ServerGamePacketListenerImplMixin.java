@@ -52,6 +52,7 @@ public abstract class ServerGamePacketListenerImplMixin {
 			return;
 		}
 
+		// delta length > 4096 blocks = coordinate-wrap artifact (normal movement is far smaller).
 		double lenSq = delta.lengthSqr();
 		if (lenSq > 4096.0 * 4096.0) {
 			LOGGER.warn(
@@ -59,6 +60,8 @@ public abstract class ServerGamePacketListenerImplMixin {
 				Math.sqrt(lenSq), instance.getX(), instance.getY(), instance.getZ(),
 				delta.x, delta.y, delta.z, this.lastGoodX, this.lastGoodZ
 			);
+			// setPos directly skips collision: the entity teleports through walls (acceptable -
+			// after coordinate wrap the collision volume itself is meaningless).
 			instance.setPos(instance.getX() + delta.x, instance.getY() + delta.y, instance.getZ() + delta.z);
 		} else {
 			instance.move(moverType, delta);

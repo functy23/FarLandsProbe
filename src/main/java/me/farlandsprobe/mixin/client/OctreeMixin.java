@@ -2,6 +2,7 @@ package me.farlandsprobe.mixin.client;
 
 import java.lang.reflect.Field;
 import me.farlandsprobe.config.FarLandsProbeConfig;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -28,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Environment(EnvType.CLIENT)
 @Mixin(Octree.class)
 public abstract class OctreeMixin {
+	private static final Logger LOGGER = LoggerFactory.getLogger("farlandsprobe");
 	private static final Field ROOT_FIELD;
 
 	static {
@@ -35,7 +37,11 @@ public abstract class OctreeMixin {
 			ROOT_FIELD = Octree.class.getDeclaredField("root");
 			ROOT_FIELD.setAccessible(true);
 		} catch (ReflectiveOperationException e) {
-			throw new RuntimeException("farlandsprobe: cannot access Octree.root", e);
+			throw new RuntimeException(
+				"farlandsprobe: cannot access Octree.root - field renamed in this Minecraft version? "
+					+ "Check OctreeMixin and update the field name",
+				e
+			);
 		}
 	}
 
@@ -83,8 +89,9 @@ public abstract class OctreeMixin {
 			maxZ = minZ + boxSize - 1;
 		}
 
+		// section 坐标 1.3e8 x 16 blocks ~= 2.08e9, close to the int edge: only then log diagnostics.
 		if (Math.abs(cameraSection.x()) > 130000000 || Math.abs(cameraSection.z()) > 130000000) {
-			LoggerFactory.getLogger("farlandsprobe").info(
+			LOGGER.info(
 				"[farlandsprobe] octree box section=({},{},{}) box=({},{},{})-({},{},{}) clampNeeded={}",
 				cameraSection.x(), cameraSection.y(), cameraSection.z(),
 				minX, minY, minZ, maxX, maxY, maxZ,

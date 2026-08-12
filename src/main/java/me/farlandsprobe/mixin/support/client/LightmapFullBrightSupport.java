@@ -16,6 +16,7 @@ public final class LightmapFullBrightSupport {
 	}
 
 	public static void applyToLightmap(LightmapRenderState renderState) {
+		// skyFactor/blockFactor max 15 (MC light level cap); brightness normalized 1.0; darkness off 0.0.
 		renderState.skyFactor = 15.0F;
 		renderState.blockFactor = 15.0F;
 		renderState.darknessEffectScale = 0.0F;
