@@ -1,4 +1,4 @@
-package me.farlandsprobe.mixin.support;
+package me.farlandsprobe.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

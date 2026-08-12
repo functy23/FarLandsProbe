@@ -1,7 +1,7 @@
 package me.farlandsprobe.mixin;
 
 import me.farlandsprobe.config.FarLandsProbeConfig;
-import me.farlandsprobe.mixin.support.SectionEncoding;
+import me.farlandsprobe.support.SectionEncoding;
 import net.minecraft.core.SectionPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

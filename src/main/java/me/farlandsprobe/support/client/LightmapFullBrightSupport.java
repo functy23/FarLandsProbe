@@ -1,4 +1,4 @@
-package me.farlandsprobe.mixin.support.client;
+package me.farlandsprobe.support.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

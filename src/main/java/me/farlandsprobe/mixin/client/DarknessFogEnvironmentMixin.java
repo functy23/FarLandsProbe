@@ -1,6 +1,6 @@
 package me.farlandsprobe.mixin.client;
 
-import me.farlandsprobe.mixin.support.FullBrightSupport;
+import me.farlandsprobe.support.FullBrightSupport;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Camera;

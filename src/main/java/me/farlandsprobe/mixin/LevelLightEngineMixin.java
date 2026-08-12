@@ -1,6 +1,6 @@
 package me.farlandsprobe.mixin;
 
-import me.farlandsprobe.mixin.support.FullBrightSupport;
+import me.farlandsprobe.support.FullBrightSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.spongepowered.asm.mixin.Mixin;

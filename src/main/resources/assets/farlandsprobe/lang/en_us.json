@@ -30,5 +30,7 @@
   "text.autoconfig.farlandsprobe.option.stability.fixOctreeOverflow": "Fix render octree overflow",
   "text.autoconfig.farlandsprobe.option.stability.fixOctreeOverflow.@Tooltip": "Fix the renderer octree bounds overflowing near ±2^31 so blocks keep rendering.",
   "text.autoconfig.farlandsprobe.option.stability.disableStructuresFarOut": "Disable structures far out",
-  "text.autoconfig.farlandsprobe.option.stability.disableStructuresFarOut.@Tooltip": "Skip structure generation beyond ±63,000,000 chunks to avoid coordinate-overflow OOM."
+  "text.autoconfig.farlandsprobe.option.stability.disableStructuresFarOut.@Tooltip": "Skip structure generation beyond ±63,000,000 chunks to avoid coordinate-overflow OOM.",
+  "text.autoconfig.farlandsprobe.option.stability.fixChunkBoundaryGeneration": "Fix chunk generation at the int edge",
+  "text.autoconfig.farlandsprobe.option.stability.fixChunkBoundaryGeneration.@Tooltip": "Compute chunk distance with 28-bit wrap semantics so edge chunks near ±2,147,483,647 generate instead of crashing on wrapped neighbour coordinates."
 }

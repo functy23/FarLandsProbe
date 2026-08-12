@@ -1,7 +1,7 @@
 package me.farlandsprobe.mixin.client;
 
-import me.farlandsprobe.mixin.support.FullBrightSupport;
-import me.farlandsprobe.mixin.support.client.LightmapFullBrightSupport;
+import me.farlandsprobe.support.FullBrightSupport;
+import me.farlandsprobe.support.client.LightmapFullBrightSupport;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.LightmapRenderStateExtractor;

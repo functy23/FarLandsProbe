@@ -1,4 +1,4 @@
-package me.farlandsprobe.mixin.support;
+package me.farlandsprobe.support;
 
 /**
  * The 28/8/28 section-coordinate packing used by {@code SectionPosMixin}

@@ -30,5 +30,7 @@
   "text.autoconfig.farlandsprobe.option.stability.fixOctreeOverflow": "修复渲染八叉树溢出",
   "text.autoconfig.farlandsprobe.option.stability.fixOctreeOverflow.@Tooltip": "渲染八叉树边界在 ±2^31 附近溢出导致方块停止渲染的修复。",
   "text.autoconfig.farlandsprobe.option.stability.disableStructuresFarOut": "极远坐标禁用结构生成",
-  "text.autoconfig.farlandsprobe.option.stability.disableStructuresFarOut.@Tooltip": "chunk 坐标超过 ±63,000,000 时跳过结构生成，避免结构坐标溢出引发 OOM。"
+  "text.autoconfig.farlandsprobe.option.stability.disableStructuresFarOut.@Tooltip": "chunk 坐标超过 ±63,000,000 时跳过结构生成，避免结构坐标溢出引发 OOM。",
+  "text.autoconfig.farlandsprobe.option.stability.fixChunkBoundaryGeneration": "修复 int 边界区块生成",
+  "text.autoconfig.farlandsprobe.option.stability.fixChunkBoundaryGeneration.@Tooltip": "用 28 位回绕语义计算区块距离，避免 ±2,147,483,647 边界处生成区块时因邻居坐标回绕而崩溃。"
 }

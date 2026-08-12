@@ -1,4 +1,4 @@
-package me.farlandsprobe.mixin.support;
+package me.farlandsprobe.support;
 
 /**
  * Small overflow-safe arithmetic helpers used by the far-edge patches.

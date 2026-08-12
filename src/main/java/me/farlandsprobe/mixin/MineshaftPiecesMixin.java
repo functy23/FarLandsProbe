@@ -1,7 +1,7 @@
 package me.farlandsprobe.mixin;
 
 import me.farlandsprobe.config.FarLandsProbeConfig;
-import me.farlandsprobe.mixin.support.OverflowSafeMath;
+import me.farlandsprobe.support.OverflowSafeMath;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.LevelAccessor;

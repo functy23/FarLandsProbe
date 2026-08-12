@@ -1,7 +1,7 @@
 package me.farlandsprobe.mixin;
 
 import me.farlandsprobe.config.FarLandsProbeConfig;
-import me.farlandsprobe.mixin.support.MovementClampSupport;
+import me.farlandsprobe.support.MovementClampSupport;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
