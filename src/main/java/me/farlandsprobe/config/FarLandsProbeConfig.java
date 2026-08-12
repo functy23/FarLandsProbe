@@ -20,23 +20,18 @@ import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 @Config(name = "farlandsprobe")
 public class FarLandsProbeConfig implements ConfigData {
 
-	// --- 光照 / Lighting ---
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
 	public Lighting lighting = new Lighting();
 
-	// --- 世界边境 / World border ---
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
 	public Border border = new Border();
 
-	// --- 生成与传送边界 / Spawn & teleport bounds ---
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
 	public Bounds bounds = new Bounds();
 
-	// --- 坐标编码 / Coordinate encoding ---
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
 	public Encoding encoding = new Encoding();
 
-	// --- 远地稳定性修复 / Far-lands stability patches ---
 	@ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
 	public Stability stability = new Stability();
 
@@ -141,14 +136,10 @@ public class FarLandsProbeConfig implements ConfigData {
 		return AutoConfig.getConfigHolder(FarLandsProbeConfig.class).getConfig();
 	}
 
-	// --- 静态访问器（供 mixin 使用）/ static accessors used by the mixins ---
-
-	// 光照 / Lighting
 	public static boolean isFullBright() {
 		return get().lighting.fullBright;
 	}
 
-	// 世界边境 / World border
 	public static boolean isRemoveWorldBorder() {
 		return get().border.removeWorldBorder;
 	}
@@ -157,7 +148,6 @@ public class FarLandsProbeConfig implements ConfigData {
 		return get().border.disableMovementClamps;
 	}
 
-	// 生成与传送边界 / Spawn & teleport bounds
 	public static boolean isRelaxSpawnAndTeleportBounds() {
 		return get().bounds.relaxSpawnAndTeleportBounds;
 	}
@@ -166,7 +156,6 @@ public class FarLandsProbeConfig implements ConfigData {
 		return get().bounds.allowChunkGenerationEverywhere;
 	}
 
-	// 坐标编码 / Coordinate encoding
 	public static boolean isExtendSectionEncoding() {
 		if (isC2mePresent()) {
 			return false; // c2me 不兼容 28/8/28 打包，自动回落到 vanilla
@@ -174,7 +163,6 @@ public class FarLandsProbeConfig implements ConfigData {
 		return get().encoding.extendSectionEncoding;
 	}
 
-	// 远地稳定性修复 / Far-lands stability patches
 	public static boolean isFixChunkBoundaryGeneration() {
 		return get().stability.fixChunkBoundaryGeneration;
 	}
