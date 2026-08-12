@@ -29,6 +29,10 @@ dependencies {
 	implementation "maven.modrinth:cloth-config:26.2.155+fabric"
 	// Mod Menu is optional at runtime; only used for the config screen entry point.
 	implementation "maven.modrinth:modmenu:20.0.1"
+
+	// Unit tests for the Minecraft-free helpers (SectionEncoding / OverflowSafeMath).
+	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 processResources {
@@ -42,6 +46,10 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 25
+}
+
+test {
+	useJUnitPlatform()
 }
 
 java {

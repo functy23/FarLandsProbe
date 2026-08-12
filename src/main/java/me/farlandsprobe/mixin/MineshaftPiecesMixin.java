@@ -1,6 +1,7 @@
 package me.farlandsprobe.mixin;
 
 import me.farlandsprobe.config.FarLandsProbeConfig;
+import me.farlandsprobe.mixin.support.OverflowSafeMath;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.LevelAccessor;
@@ -21,6 +22,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(targets = "net.minecraft.world.level.levelgen.structure.structures.MineshaftPieces$MineShaftPiece")
 public abstract class MineshaftPiecesMixin {
+	// NOTE: this body is a 1:1 port of vanilla isInInvalidLocation, with only the
+	// corridor midpoint rewritten overflow-safe. When syncing with an upstream
+	// Minecraft update, diff against the vanilla method first.
 	@Inject(method = "isInInvalidLocation(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;)Z", at = @At("HEAD"), cancellable = true)
 	private void farlandsprobe$overflowSafeMidpoint(LevelAccessor level, BoundingBox chunkBB, CallbackInfoReturnable<Boolean> cir) {
 		if (!FarLandsProbeConfig.isFixMineshaftOverflow()) {
@@ -32,7 +36,9 @@ public abstract class MineshaftPiecesMixin {
 		int x1 = Math.min(((StructurePiece) (Object) this).getBoundingBox().maxX() + 1, chunkBB.maxX());
 		int y1 = Math.min(((StructurePiece) (Object) this).getBoundingBox().maxY() + 1, chunkBB.maxY());
 		int z1 = Math.min(((StructurePiece) (Object) this).getBoundingBox().maxZ() + 1, chunkBB.maxZ());
-		BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos(x0 + (x1 - x0) / 2, y0 + (y1 - y0) / 2, z0 + (z1 - z0) / 2);
+		// Overflow-safe midpoint: vanilla (x0+x1)/2 overflows past 2^30; see OverflowSafeMath.
+		BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos(
+			OverflowSafeMath.midpoint(x0, x1), OverflowSafeMath.midpoint(y0, y1), OverflowSafeMath.midpoint(z0, z1));
 		if (level.getBiome(blockPos).is(BiomeTags.MINESHAFT_BLOCKING)) {
 			cir.setReturnValue(true);
 			return;

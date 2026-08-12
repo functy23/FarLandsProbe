@@ -49,9 +49,18 @@ public interface AquiferMixin {
 		long minBlockZ = pos.getMinBlockZ();
 		long maxBlockZ = pos.getMaxBlockZ();
 
-		long gridSizeX = ((maxBlockX - 5) >> 4) + 1 - ((minBlockX - 5) >> 4) + 1;
-		long gridSizeY = Math.floorDiv((long) minBlockY + yBlockSize + 1, 12) + 1 - (Math.floorDiv((long) minBlockY + 1, 12) - 1) + 1;
-		long gridSizeZ = ((maxBlockZ - 5) >> 4) + 1 - ((minBlockZ - 5) >> 4) + 1;
+		// Mirror vanilla's grid-size computation with long math so the int
+		// overflow that happens near the coordinate edge cannot slip through.
+		// X/Z grid step = 16 blocks (>>4); Y grid step = 12 blocks (floorDiv).
+		long maxGridX = (maxBlockX - 5) >> 4;
+		long minGridX = (minBlockX - 5) >> 4;
+		long gridSizeX = (maxGridX + 1) - minGridX + 1;
+		long maxGridY = Math.floorDiv((long) minBlockY + yBlockSize + 1, 12) + 1;
+		long minGridY = Math.floorDiv((long) minBlockY + 1, 12) - 1;
+		long gridSizeY = maxGridY - minGridY + 1;
+		long maxGridZ = (maxBlockZ - 5) >> 4;
+		long minGridZ = (minBlockZ - 5) >> 4;
+		long gridSizeZ = (maxGridZ + 1) - minGridZ + 1;
 		long total = gridSizeX * gridSizeY * gridSizeZ;
 		if (Math.abs(total) > MAX_AQUIFER_GRID || Math.abs(gridSizeX) > MAX_GRID_SIDE
 			|| Math.abs(gridSizeY) > MAX_GRID_SIDE || Math.abs(gridSizeZ) > MAX_GRID_SIDE) {
