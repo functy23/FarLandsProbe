@@ -1,7 +1,7 @@
 package me.farlandsprobe.mixin;
 
 import me.farlandsprobe.config.FarLandsProbeConfig;
-import net.minecraft.util.Mth;
+import me.farlandsprobe.mixin.support.MovementClampSupport;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +23,7 @@ public abstract class EntityMixin {
 		at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(DDD)D", ordinal = 0)
 	)
 	private static double farlandsprobe$noAbsSnapClampX(double value, double min, double max) {
-		return FarLandsProbeConfig.isDisableMovementClamps() ? value : Mth.clamp(value, min, max);
+		return MovementClampSupport.clampIfEnabled(value, min, max);
 	}
 
 	@Redirect(
@@ -31,6 +31,6 @@ public abstract class EntityMixin {
 		at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(DDD)D", ordinal = 1)
 	)
 	private static double farlandsprobe$noAbsSnapClampZ(double value, double min, double max) {
-		return FarLandsProbeConfig.isDisableMovementClamps() ? value : Mth.clamp(value, min, max);
+		return MovementClampSupport.clampIfEnabled(value, min, max);
 	}
 }
