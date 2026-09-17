@@ -2,13 +2,19 @@
 
 **[English](README.md) | [简体中文](README.zh-CN.md)**
 
-一个 Minecraft **26.2 / 26.1.2** Fabric 模组（无混淆 / Mojang 官方映射），用于探索世界边界之外、精度开始崩坏的地形。同一份源码同时构建两个游戏版本。
+一个 Minecraft **26.3 / 26.2 / 26.1.2** Fabric 模组（无混淆 / Mojang 官方映射），用于探索世界边界之外、精度开始崩坏的地形。同一份源码同时构建三个游戏版本。
 
 > ⚠️ **注意：本 mod 并非「恢复边境之地（Far Lands）」。** 经典「边境之地」是 Beta 1.8 之前地形生成器在 12,550,824 格处产生的海量噪声地形 bug，本 mod **不会**恢复那种地形。它做的是相反的事：**移除现代版本的世界边境与坐标限制**，让你越过限制直接观察精度崩坏的现象（光照错乱、区块结构覆盖、渲染消失等）。想要原汁原味的边境之地地形，请去找真正的 Far Lands 恢复类 mod。
 
 所有功能默认开启，但**每个功能都可以独立开关**。
 
 ## 更新日志
+
+**v1.3.0** — 支持 Minecraft 26.3：
+- 新增 **Minecraft 26.3** 构建（`mc-26.3`）。26.3 重构了含水层创建：`Aquifer.create(NoiseChunk, ChunkPos, NoiseRouter, ...)` 变为 `Aquifer$Config.create(DensitySamplerSet, PositionalRandomFactory, DensityVolume, FluidPicker)`，因此含水层溢出防护有了 26.3 版本（`AquiferConfigMixin`，只在 26.3 的 mixin 配置里注册）。网格公式本身（X/Z `>> 4`、Y `floorDiv(v, 12)`、再三边连乘）没变，于是把判定抽到共享的 `AquiferGridGuard`（有单元测试），两个版本只差注入点。**其余所有 mixin 目标在 26.1.2 / 26.2 / 26.3 上 API 完全一致。**
+- 26.3 依赖：Fabric Loader 0.19.5、Fabric API 0.160.7+26.3、Cloth Config 26.3.158+fabric、Mod Menu 21.0.0-beta.1。
+- 新增 `./gradlew verifyMixins` 任务：静态校验每个已注册 mixin 的目标类 / 目标方法 / `@At` 调用点 / `@Shadow`，以及 **mixin 自身的 class/interface 类型是否与目标一致**。javac 不校验注入点，而 `defaultRequire = 1` 会让一个失效目标在运行时废掉整份 mixin 配置——本任务把「这次升级有没有改坏 mixin」变成构建步骤。当前结果：**每个版本 81 项检查，0 错误**。这次适配 26.3 时它抓出了两个真实问题：含水层入口搬家、以及一个 mixin 用 interface 打 class 目标（只做静态方法校验是发现不了后者的）。
+- 新增 `./gradlew smokeMixinLoad` 任务：把每个版本的开发服务端真正启动到「Mixin 加载器接受这份配置」，再停掉（会自己在 gitignore 的 `run/` 目录里补上 `eula=true`）。这是静态校验看不到的那一层——26.3 目前能带着 mod 跑到 `Done (0.228s)`，零 mixin 报错。
 
 **v1.2.1** — 维护性清理（无行为变更）：
 - 全部 Java 注释统一为中文（原中英混杂）。
@@ -72,23 +78,28 @@
 3. **放开生成/传送检查**：`Level` 边界 + `getHeight`；`ChunkPos#isValid` 允许任意坐标生成
 4. **扩展坐标编码与稳定性修复**
    - `SectionPos` 改为 **X/Z 28 位 + Y 8 位** → 渲染/生成上限推到 ±2,147,483,632 格（C2ME 下自动回落）
-   - `Aquifer`：long 计算防御异常的网格尺寸（防巨大数组 OOM）
+   - `Aquifer`：long 计算防御异常的网格尺寸（防巨大数组 OOM）——26.1.2/26.2 走 `AquiferMixin`，26.3 走 `AquiferConfigMixin`（见更新日志），判定逻辑共享 `AquiferGridGuard`
    - `LayerLightSectionStorage` / `EntitySectionStorage` / `MineshaftPieces` / `Octree` 溢出防护
    - 极远坐标跳过结构生成（避免坐标溢出 OOM）
 
 ## 构建 / 运行
 
 ```bash
-./gradlew build                    # 一次产出两个版本：
+./gradlew build                    # 一次产出三个版本：
                                    #   build/libs/farlandsprobe-26.2-<version>.jar
                                    #   mc-26.1.2/build/libs/farlandsprobe-26.1.2-<version>.jar
-./gradlew build -x :mc-26.1.2:build   # 只构建 26.2
-./gradlew :mc-26.1.2:build        # 只构建 26.1.2
-./gradlew runClient               # 启动 26.2 开发客户端
-./gradlew :mc-26.1.2:runClient    # 启动 26.1.2 开发客户端
+                                   #   mc-26.3/build/libs/farlandsprobe-26.3-<version>.jar
+./gradlew verifyMixins             # 静态校验三个版本的 mixin 注入点
+./gradlew smokeMixinLoad           # 运行期冒烟：启动三个版本的开发服务端，证明 mixin 配置能被加载
+./gradlew build -x :mc-26.1.2:build -x :mc-26.3:build   # 只构建 26.2
+./gradlew :mc-26.3:build           # 只构建 26.3
+./gradlew :mc-26.1.2:build         # 只构建 26.1.2
+./gradlew runClient                # 启动 26.2 开发客户端
+./gradlew :mc-26.3:runClient       # 启动 26.3 开发客户端
+./gradlew :mc-26.1.2:runClient     # 启动 26.1.2 开发客户端
 ```
 
-装入普通客户端：把对应游戏版本的 jar 放进 `mods/`，需要 Fabric Loader ≥ 0.19.3，**并同时安装 [Cloth Config](https://modrinth.com/mod/cloth-config)**（必装）；Mod Menu 可选（推荐，用于打开配置界面）。
+装入普通客户端：把对应游戏版本的 jar 放进 `mods/`，需要 Fabric Loader ≥ 0.19.3（26.3 需 ≥ 0.19.5），**并同时安装 [Cloth Config](https://modrinth.com/mod/cloth-config)**（必装）；Mod Menu 可选（推荐，用于打开配置界面）。
 
 ## 免责声明
 

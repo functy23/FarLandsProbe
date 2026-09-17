@@ -8,6 +8,8 @@ pluginManagement {
 
 rootProject.name = "FarLandsProbe"
 
-// Multi-version support: the root project builds for MC 26.2, and the
-// mc-26.1.2 subproject builds the same sources for MC 26.1.2.
+// Multi-version support: the root project builds for MC 26.2, and the two
+// subprojects build the same sources for MC 26.1.2 and MC 26.3.
+// Only the registered mixin list differs per version (see mc-26.3/build.gradle).
 include "mc-26.1.2"
+include "mc-26.3"

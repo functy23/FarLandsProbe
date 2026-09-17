@@ -45,7 +45,8 @@ processResources {
 	inputs.property "version", version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": version, "minecraft_version": project.minecraft_version
+		expand "version": version, "minecraft_version": project.minecraft_version,
+			"loader_dependency": ">=" + project.loader_version
 	}
 }
 
@@ -66,4 +67,115 @@ java {
 jar {
 	def projectName = project.name
 	inputs.property "projectName", projectName
+}
+
+/**
+ * 静态校验 mixin 注入点是否仍然存在于对应版本的 Minecraft 里。
+ *
+ * 为什么需要:javac 不校验 @Inject 的 method 选择器,@At 指定的调用点更是完全看不见。
+ * 版本升级后注入点消失只会在**运行时**以 "Injection failure" 炸掉,而且因为
+ * mixins.json 里 defaultRequire = 1,一个失败会让整份配置失效。本任务用 ASM 读
+ * Minecraft 命名 jar,核对每个已注册 mixin 的目标类/目标方法/@At 调用点(含 ordinal),
+ * 让版本升级变成可验证的构建步骤。
+ *
+ * 用法: ./gradlew verifyMixins
+ */
+tasks.register("verifyMixins") {
+	group = "verification"
+	description = "Statically verify every registered mixin injection point against the Minecraft jar"
+	dependsOn subprojects.collect { it.tasks.named("build") } + [tasks.named("build")]
+
+	def minecraftJars = [
+		"26.1.2": file("mc-26.1.2/build/libs/farlandsprobe-26.1.2-${project.mod_version}.jar"),
+		"26.2"  : file("build/libs/farlandsprobe-26.2-${project.mod_version}.jar"),
+		"26.3"  : file("mc-26.3/build/libs/farlandsprobe-26.3-${project.mod_version}.jar"),
+	]
+	def loomCache = file(".gradle/loom-cache/minecraftMaven/net/minecraft")
+	def auditSource = file("tools/mixin-audit/MixinAudit.java")
+	def asmVersion = "9.10.1"
+	def asmClasspath = configurations.detachedConfiguration(
+		["org.ow2.asm:asm", "org.ow2.asm:asm-tree", "org.ow2.asm:asm-analysis", "org.ow2.asm:asm-commons"].collect {
+			dependencies.create("${it}:${asmVersion}")
+		} as Dependency[]
+	)
+
+	inputs.files(minecraftJars.values())
+	inputs.files(asmClasspath)
+	inputs.file(auditSource)
+	outputs.upToDateWhen { false }
+
+	doLast {
+		def asmJars = asmClasspath.files.collect { it.absolutePath }
+		def failed = []
+		minecraftJars.each { version, modJar ->
+			def mcJar = fileTree(loomCache) { include "*/" + version + "/*.jar" }.files.find { true }
+			if (mcJar == null) {
+				throw new GradleException("Minecraft ${version} jar not found under ${loomCache} - run the ${version} build first")
+			}
+			logger.lifecycle("verifyMixins: Minecraft ${version}")
+			def javaBin = "${System.getProperty('java.home')}/bin/java".toString()
+			String[] command = [javaBin, "-cp", asmJars.join(File.pathSeparator),
+								auditSource.absolutePath, mcJar.absolutePath, modJar.absolutePath]
+			def process = new ProcessBuilder(command).redirectErrorStream(true).start()
+			def out = process.inputStream.text
+			def exitCode = process.waitFor()
+			println out
+			if (exitCode != 0) {
+				failed << version
+			}
+		}
+		if (!failed.isEmpty()) {
+			throw new GradleException("verifyMixins FAILED for Minecraft ${failed.join(', ')}")
+		}
+		logger.lifecycle("verifyMixins: all versions OK (static)")
+	}
+}
+
+/**
+ * 运行期冒烟:真的把每个版本的开发服务端启动一次,确认 mixin 配置能被 Mixin 加载器
+ * 接受(static 校验看不出的问题——例如 mixin 的 class/interface 类型与目标不匹配、
+ * mixin 之间互相冲突——只会在这一步暴露)。启动到 "Done" 或出现 mixin 报错即结束。
+ *
+ * 首次运行需要下载对应版本的资源,比较慢;之后走缓存。
+ *
+ * 用法: ./gradlew smokeMixinLoad
+ */
+tasks.register("smokeMixinLoad") {
+	group = "verification"
+	description = "Boot each version's dev server until mixin loading is proven, then stop it"
+
+	def smokeScript = file("tools/mixin-audit/smoke-server.sh")
+
+	inputs.file(smokeScript)
+	outputs.upToDateWhen { false }
+
+	doLast {
+		def versions = [
+			"26.1.2": [":mc-26.1.2:runServer", "mc-26.1.2/run"],
+			"26.2"  : [":runServer", "run"],
+			"26.3"  : [":mc-26.3:runServer", "mc-26.3/run"],
+		]
+		def failed = []
+		versions.each { version, spec ->
+			def (runTask, runDir) = spec
+			logger.lifecycle("smokeMixinLoad: Minecraft ${version}")
+			String[] command = ["/bin/bash", smokeScript.absolutePath, version, runTask, runDir]
+			def process = new ProcessBuilder(command)
+				.directory(projectDir)
+				.redirectErrorStream(true)
+				.start()
+			def out = process.inputStream.text
+			def exitCode = process.waitFor()
+			def tail = out.readLines().findAll { it.contains("Mixin") || it.contains("Done") || it.contains("farlandsprobe") }
+			println tail.take(12).join("\n")
+			if (exitCode != 0) {
+				println out.readLines().takeRight(40).join("\n")
+				failed << version
+			}
+		}
+		if (!failed.isEmpty()) {
+			throw new GradleException("smokeMixinLoad FAILED for Minecraft ${failed.join(', ')}")
+		}
+		logger.lifecycle("smokeMixinLoad: all versions OK (runtime)")
+	}
 }

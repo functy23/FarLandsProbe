@@ -1,0 +1,103 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'maven-publish'
+}
+
+version = rootProject.mod_version
+group = rootProject.maven_group
+
+repositories {
+	maven { url = "https://api.modrinth.com/maven" }
+}
+
+// Distinct artifact name so all version jars can coexist: farlandsprobe-26.3-<version>.jar
+base {
+	archivesName = "farlandsprobe-26.3"
+}
+
+// The 26.3 build shares the root (26.2) sources, plus the 26.3-only aquifer
+// injection point in src/main/java (see the mixins.json note under sourceSets).
+sourceSets {
+	main {
+		java.srcDirs = ["../src/main/java", "src/main/java"]
+		// 本工程自带一份 mixins.json:26.3 把含水层创建从 Aquifer.create 搬到了
+		// Aquifer$Config.create,注册的 mixin 列表必须随之换成 AquiferConfigMixin。
+		// 本工程目录排在共享资源之前,同名文件以本工程为准(见 processResources)。
+		resources.srcDirs = ["src/main/resources", "../src/main/resources"]
+	}
+	test {
+		java.srcDirs = ["../src/test/java"]
+	}
+}
+
+loom {
+	accessWidenerPath = file("../src/main/resources/farlandsprobe.accesswidener")
+
+	runs {
+		client {
+			// far-lands exploration generates huge amounts of terrain; give the game headroom.
+			vmArgs "-Xmx8G"
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:26.3"
+	implementation "net.fabricmc:fabric-loader:0.19.5"
+	implementation "net.fabricmc.fabric-api:fabric-api:0.160.7+26.3"
+	// Cloth Config is required (config screens + config file).
+	implementation "maven.modrinth:cloth-config:26.3.158+fabric"
+	// Mod Menu is optional at runtime; only used for the config screen entry point.
+	implementation "maven.modrinth:modmenu:21.0.0-beta.1"
+
+	// Unit tests for the Minecraft-free helpers (SectionEncoding / OverflowSafeMath).
+	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+
+	def minecraftVersion = "26.3"
+	inputs.property "minecraft_version", minecraftVersion
+
+	// 26.3 要求 Fabric Loader >= 0.19.5(26.1.2 / 26.2 是 >= 0.19.3),所以这里
+	// 用本工程自己的 loader 版本展开,而不是根工程的 loader_version。
+	def loaderDependency = ">=0.19.5"
+	inputs.property "loader_dependency", loaderDependency
+
+	filesMatching("fabric.mod.json") {
+		expand "version": version, "minecraft_version": minecraftVersion,
+			"loader_dependency": loaderDependency
+	}
+
+	// farlandsprobe.mixins.json 在两个 srcDir 里各有一份(见 sourceSets 注释)。
+	// EXCLUDE = 先到先得,让"本工程覆盖共享资源"成为显式契约,而不是复制顺序的巧合。
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+}
+
+test {
+	useJUnitPlatform()
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+jar {
+	def projectName = project.name
+	inputs.property "projectName", projectName
+}
+
+// sourcesJar 会把两个资源目录里的同名文件(本工程的 mixins.json 与共享的那份)
+// 都收集进来;与 processResources 保持同一策略:先到先得。
+tasks.named("sourcesJar") {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

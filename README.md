@@ -2,13 +2,19 @@
 
 **[English](README.md) | [简体中文](README.zh-CN.md)**
 
-A Minecraft **26.2 / 26.1.2** Fabric mod (deobfuscated / Mojang official mappings) for exploring what happens past the world edge, where precision starts to break down. The same source tree builds for both game versions.
+A Minecraft **26.3 / 26.2 / 26.1.2** Fabric mod (deobfuscated / Mojang official mappings) for exploring what happens past the world edge, where precision starts to break down. The same source tree builds for all three game versions.
 
 > ⚠️ **Note: this mod does NOT restore the Far Lands.** The classic "Far Lands" is a Beta-1.8-era noise-wall terrain bug at ~12,550,824 blocks. This mod does the opposite: it removes the modern world border and coordinate limits so you can push past them and observe precision corruption (lighting corruption, chunk structures overlapping, rendering vanishing, ...). Want the authentic Far Lands terrain? Look for a real Far Lands restoration mod.
 
 All features are enabled by default, but **every feature can be toggled independently**.
 
 ## Changelog
+
+**v1.3.0** — Minecraft 26.3 support:
+- Added a **Minecraft 26.3** build (`mc-26.3`). 26.3 refactored aquifer creation — `Aquifer.create(NoiseChunk, ChunkPos, NoiseRouter, ...)` became `Aquifer$Config.create(DensitySamplerSet, PositionalRandomFactory, DensityVolume, FluidPicker)` — so the aquifer overflow guard now has a 26.3 twin (`AquiferConfigMixin`) registered only in the 26.3 mixin config. The grid math itself (X/Z `>> 4`, Y `floorDiv(v, 12)`, then a triple multiply) is unchanged, so the shared guard was extracted into `AquiferGridGuard` (unit-tested) and both versions only differ in the injection point. **Every other mixin target is API-identical across 26.1.2 / 26.2 / 26.3.**
+- Dependencies for 26.3: Fabric Loader 0.19.5, Fabric API 0.160.7+26.3, Cloth Config 26.3.158+fabric, Mod Menu 21.0.0-beta.1.
+- New `./gradlew verifyMixins` task: statically checks every registered mixin (target class, target method, `@At` call site, `@Shadow`, and that the mixin's class/interface kind matches its target) against the Minecraft jar of each version. javac does not validate injection points and `defaultRequire = 1` makes one stale target disable the whole mixin config at runtime — this turns "did the update break a mixin?" into a build step. Current status: **81 checks per version, 0 errors**. It also caught two real 26.3 issues during this update: the moved aquifer entry point, and a mixin declared as an interface against a class target (static-only validation would have missed the latter).
+- New `./gradlew smokeMixinLoad` task: boots each version's dev server until the mixin loader has accepted the config, then stops it (adds `eula=true` to the gitignored `run/` dir itself). This is the layer the static check cannot see — 26.3 currently reaches `Done (0.228s)` with the mod loaded and zero mixin errors.
 
 **v1.2.1** — Maintenance pass (no behavior change):
 - All Java comments unified to Chinese (previously mixed EN/ZH).
@@ -73,23 +79,28 @@ All features are enabled by default, but **every feature can be toggled independ
 3. **Relax spawn & teleport checks** — `Level` bounds + `Level#getHeight`; `ChunkPos#isValid` allows generation anywhere.
 4. **Extended coordinate encoding & stability patches**
    - `SectionPos` repacked **X/Z 28 bits + Y 8 bits** → render/generation limit moves to ±2,147,483,632 blocks (auto-fallback under C2ME)
-   - `Aquifer`: long-math guard against absurd grid sizes (prevents OOM from huge allocations)
+   - `Aquifer`: long-math guard against absurd grid sizes (prevents OOM from huge allocations) — `AquiferMixin` on 26.1.2/26.2, `AquiferConfigMixin` on 26.3 (see changelog), shared logic in `AquiferGridGuard`
    - `LayerLightSectionStorage` / `EntitySectionStorage` / `MineshaftPieces` / `Octree` overflow guards
    - Structures skipped far out (avoid coordinate-overflow OOM)
 
 ## Build / Run
 
 ```bash
-./gradlew build                      # produces both jars in one run:
-                                     #   build/libs/farlandsprobe-26.2-<version>.jar
-                                     #   mc-26.1.2/build/libs/farlandsprobe-26.1.2-<version>.jar
-./gradlew build -x :mc-26.1.2:build  # 26.2 only
-./gradlew :mc-26.1.2:build           # 26.1.2 only
-./gradlew runClient                  # launches the 26.2 dev client
-./gradlew :mc-26.1.2:runClient       # launches the 26.1.2 dev client
+./gradlew build                       # produces all three jars in one run:
+                                      #   build/libs/farlandsprobe-26.2-<version>.jar
+                                      #   mc-26.1.2/build/libs/farlandsprobe-26.1.2-<version>.jar
+                                      #   mc-26.3/build/libs/farlandsprobe-26.3-<version>.jar
+./gradlew verifyMixins                # checks every mixin injection point against all three MC jars (static)
+./gradlew smokeMixinLoad              # boots each dev server to prove the mixin config actually loads (runtime)
+./gradlew build -x :mc-26.1.2:build -x :mc-26.3:build   # 26.2 only
+./gradlew :mc-26.3:build              # 26.3 only
+./gradlew :mc-26.1.2:build            # 26.1.2 only
+./gradlew runClient                   # launches the 26.2 dev client
+./gradlew :mc-26.3:runClient          # launches the 26.3 dev client
+./gradlew :mc-26.1.2:runClient        # launches the 26.1.2 dev client
 ```
 
-Install: put the jar matching your game version into `mods/`, requires Fabric Loader ≥ 0.19.3, **plus [Cloth Config](https://modrinth.com/mod/cloth-config)** (required); Mod Menu is optional (recommended for the config screen).
+Install: put the jar matching your game version into `mods/`, requires Fabric Loader ≥ 0.19.3 (≥ 0.19.5 for 26.3), **plus [Cloth Config](https://modrinth.com/mod/cloth-config)** (required); Mod Menu is optional (recommended for the config screen).
 
 ## Disclaimer
 
