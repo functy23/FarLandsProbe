@@ -1,6 +1,28 @@
-# FarLands Probe (farlandsprobe)
+<div align="center">
 
-**[English](README.md) | [简体中文](README.zh-CN.md)**
+# 🧭 FarLands Probe
+
+**A Minecraft 26.3 / 26.2 / 26.1.2 Fabric mod that removes the world border and coordinate limits so you can explore precision corruption past the world edge.**
+
+[![FarLandsProbe](https://img.shields.io/badge/FarLandsProbe-FLP-orange.svg)](https://github.com/functy23/FarLandsProbe)
+[![Java](https://img.shields.io/badge/Java-25-red.svg?logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Top Language](https://img.shields.io/github/languages/top/functy23/FarLandsProbe?style=flat)](https://github.com/functy23/FarLandsProbe)
+[![Platform](https://img.shields.io/badge/platform-Fabric%20%7C%20Minecraft%2026.x-lightgrey.svg?logo=minecraft&logoColor=white)](https://github.com/functy23/FarLandsProbe)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
+
+[![Release](https://img.shields.io/github/v/release/functy23/FarLandsProbe?style=flat&logo=github)](https://github.com/functy23/FarLandsProbe/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/functy23/FarLandsProbe/total?label=Downloads&logo=github)](https://github.com/functy23/FarLandsProbe/releases)
+[![Stars](https://img.shields.io/github/stars/functy23/FarLandsProbe?style=flat&logo=github)](https://github.com/functy23/FarLandsProbe/stargazers)
+[![Repo Size](https://img.shields.io/github/repo-size/functy23/FarLandsProbe?style=flat&logo=github)](https://github.com/functy23/FarLandsProbe)
+[![Contributors](https://img.shields.io/github/contributors/functy23/FarLandsProbe?color=ee8449&logo=githubsponsors)](https://github.com/functy23/FarLandsProbe/graphs/contributors)
+
+[Issues](https://github.com/functy23/FarLandsProbe/issues) • [Releases](https://github.com/functy23/FarLandsProbe/releases)
+
+**English** | [简体中文](doc/README_zh-CN.md)
+</div>
+
+---
 
 A Minecraft **26.3 / 26.2 / 26.1.2** Fabric mod (deobfuscated / Mojang official mappings) for exploring what happens past the world edge, where precision starts to break down. The same source tree builds for all three game versions.
 
